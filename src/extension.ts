@@ -7,7 +7,7 @@ import { WebviewManager } from './ui/webview/WebviewManager';
 import { CommandTreeItem } from '../apps/tasks/treeView/CommandTreeItem';
 import { DocumentationTreeProvider } from '../apps/documentation/DocumentationTreeProvider';
 import { StatusBarManager } from './ui/StatusBarManager';
-import { TestRunnerConfig } from './types';
+import { TestRunnerConfig, Timer, SubTimer, Folder, Command } from './types';
 import { TestRunnerTreeProvider } from '../apps/testRunner/TestRunnerTreeProvider';
 import { TestRunnerTreeItem } from '../apps/testRunner/TestRunnerTreeItem';
 import { TestRunnerCodeLensProvider } from '../apps/testRunner/TestRunnerCodeLensProvider';
@@ -16,8 +16,6 @@ import { TimeTrackerManager } from '../apps/timeTracker/TimeTrackerManager';
 import { TimeTrackerTreeProvider } from '../apps/timeTracker/TimeTrackerTreeProvider';
 import { TimeTrackerTreeItem } from '../apps/timeTracker/TimeTrackerTreeItem';
 import { TimeTrackerStatusBar } from '../apps/timeTracker/TimeTrackerStatusBar';
-import { Timer, SubTimer } from './types';
-
 type DocumentationPosition = 'top' | 'bottom';
 
 async function applyDocumentationViewPosition(position: DocumentationPosition): Promise<void> {
@@ -153,8 +151,14 @@ export async function activate(context: vscode.ExtensionContext) {
     
     // Function to expand running timers
     const expandRunningTimers = async () => {
+        if (!timeTrackerTreeView.visible) {
+            return;
+        }
         try {
             const config = timeTrackerManager.getConfig();
+            if (!config) {
+                return;
+            }
             const runningTimers: Timer[] = [];
             
             // Collect all running timers
@@ -197,6 +201,10 @@ export async function activate(context: vscode.ExtensionContext) {
                         return null;
                     };
                     
+                    if (!timeTrackerTreeView.visible) {
+                        return;
+                    }
+
                     const timerItem = await findTimerItem(rootItems);
                     if (timerItem) {
                         await timeTrackerTreeView.reveal(timerItem, { expand: true, select: false, focus: false });
@@ -502,6 +510,78 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    const convertWorkspaceTask = vscode.commands.registerCommand('commandManager.convertWorkspaceTask', async (item: CommandTreeItem) => {
+        if (!item || !item.isCommand()) {
+            return;
+        }
+
+        const command = item.getCommand();
+        if (!command || !command.readOnly || command.source !== 'vscode-task') {
+            return;
+        }
+
+        const config = configManager.getConfig();
+
+        const collectIds = (folders: Folder[], bucket: Set<string>): void => {
+            for (const folder of folders) {
+                folder.commands.forEach(cmd => bucket.add(cmd.id));
+                if (folder.subfolders?.length) {
+                    collectIds(folder.subfolders, bucket);
+                }
+            }
+        };
+
+        const existingIds = new Set<string>();
+        collectIds(config.folders, existingIds);
+
+        const slugify = (value: string): string =>
+            value
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '') || `converted-${Date.now()}`;
+
+        const baseId = slugify(command.label || command.id || 'task');
+        let candidateId = baseId;
+        let counter = 1;
+        while (existingIds.has(candidateId)) {
+            candidateId = `${baseId}-${counter++}`;
+        }
+
+        const destinationFolderName = 'Converted Tasks';
+        let destinationFolder = config.folders.find(folder => folder.name === destinationFolderName);
+        if (!destinationFolder) {
+            destinationFolder = {
+                name: destinationFolderName,
+                icon: '$(edit)',
+                commands: [],
+                subfolders: []
+            };
+            config.folders.push(destinationFolder);
+        }
+
+        const editableCommand: Command = {
+            id: candidateId,
+            label: command.label,
+            command: command.command,
+            description: command.description?.replace('Imported from tasks.json', 'Converted from tasks.json') ?? 'Converted from tasks.json',
+            terminal: { ...command.terminal },
+            variables: command.variables ? command.variables.map(variable => ({ ...variable })) : undefined,
+            icon: command.icon,
+            source: 'config'
+        };
+
+        destinationFolder.commands.push(editableCommand);
+
+        try {
+            await configManager.saveConfig(config);
+            treeProvider.refresh();
+            vscode.window.showInformationMessage(`Converted "${command.label}" into an editable task.`);
+            webviewManager.showCommandEditor(editableCommand);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to convert task: ${error}`);
+        }
+    });
+
     const editFolder = vscode.commands.registerCommand('commandManager.editFolder', async (item: CommandTreeItem) => {
         if (item && item.isFolder()) {
             const folder = item.getFolder();
@@ -538,6 +618,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const deleteItem = vscode.commands.registerCommand('commandManager.deleteItem', async (item: CommandTreeItem) => {
         if (!item) return;
+
+        if (item.isCommand()) {
+            const command = item.getCommand();
+            if (command?.readOnly) {
+                void vscode.window.showInformationMessage('Imported tasks from tasks.json cannot be deleted. Convert them to editable tasks first.');
+                return;
+            }
+        } else if (item.isFolder()) {
+            const folder = item.getFolder();
+            if (folder?.readOnly) {
+                void vscode.window.showInformationMessage('The tasks.json folder is read-only.');
+                return;
+            }
+        }
 
         const confirm = await vscode.window.showWarningMessage(
             `Are you sure you want to delete "${item.label}"?`,
@@ -687,6 +781,7 @@ export async function activate(context: vscode.ExtensionContext) {
         newFolder,
         editFolder,
         duplicateCommand,
+        convertWorkspaceTask,
         runCommandById,
         pinToStatusBar,
         moveItemUp,

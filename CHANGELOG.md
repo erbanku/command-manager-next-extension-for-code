@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.3] - 2025-01-13
+
+### Fixed
+- Fixed timer config file being cleared on PC restart - now only creates file if it doesn't exist, never overwrites on failure
+- Improved backup restore messaging - shows clear message when using backup file
+- Changed unexpected shutdown detection to check on resume instead of only on startup - detects VS Code closure when resuming subtimers
+
+## [1.4.2] - 2025-01-XX
+
+### Added
+- Automatic import of VS Code tasks from `tasks.json` into Tasks panel
+- Tasks from `tasks.json` appear in read-only "tasks.json" folder
+- Convert imported tasks to editable tasks via context menu
+- Support for pinning imported tasks to status bar
+
+### Changed
+- Tasks App now automatically imports and displays tasks from `.vscode/tasks.json`
+
+## [1.4.1] - 2025-01-XX
+
 ### Added
 - Drag-and-drop support for reorganising folders and commands directly inside the
   Task and Documentation Hub command tree view.

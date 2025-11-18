@@ -2,7 +2,7 @@
   "name": "command-manager",
   "displayName": "Tasks, Tests & Doc Hub",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "publisher": "LeonardoSouza",
   "author": {
     "name": "Leonardo de Souza Chaves",
@@ -74,18 +74,18 @@
           "name": "Documentation Hub",
           "group": "2_documentation"
         },
-                  {
-            "id": "testRunnerTree",
-            "name": "Test Runner",
-            "group": "3_testRunner"
-          },
-          {
-            "id": "timeTrackerTree",
-            "name": "Time Tracker",
-            "group": "4_timeTracker"
-          }
-        ]
-      },
+        {
+          "id": "testRunnerTree",
+          "name": "Test Runner",
+          "group": "3_testRunner"
+        },
+        {
+          "id": "timeTrackerTree",
+          "name": "Time Tracker",
+          "group": "4_timeTracker"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "commandManager.runCommand",
@@ -123,6 +123,11 @@
       {
         "command": "commandManager.pinToStatusBar",
         "title": "Pin Command in Status Bar"
+      },
+      {
+        "command": "commandManager.convertWorkspaceTask",
+        "title": "Convert to Editable Task",
+        "icon": "$(edit)"
       },
       {
         "command": "commandManager.moveItemUp",
@@ -255,18 +260,18 @@
         "icon": "$(play-circle)",
         "category": "Task and Documentation Hub"
       },
-        {
-          "command": "testRunner.expandAll",
-          "title": "Test Runner: Expand All",
-          "icon": "$(expand-all)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "testRunner.collapseAll",
-          "title": "Test Runner: Collapse All",
-          "icon": "$(collapse-all)",
-          "category": "Task and Documentation Hub"
-        },
+      {
+        "command": "testRunner.expandAll",
+        "title": "Test Runner: Expand All",
+        "icon": "$(expand-all)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "testRunner.collapseAll",
+        "title": "Test Runner: Collapse All",
+        "icon": "$(collapse-all)",
+        "category": "Task and Documentation Hub"
+      },
       {
         "command": "testRunner.refresh",
         "title": "Test Runner: Refresh",
@@ -327,132 +332,132 @@
         "icon": "$(circle-slash)",
         "category": "Task and Documentation Hub"
       },
-              {
-          "command": "testRunner.gotoTest",
-          "title": "Test Runner: Open Test",
-          "icon": "$(go-to-file)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.startTimer",
-          "title": "Time Tracker: Start Timer",
-          "icon": "$(play)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.stopTimer",
-          "title": "Time Tracker: Stop Timer",
-          "icon": "$(debug-stop)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.resumeTimer",
-          "title": "Time Tracker: Resume Timer",
-          "icon": "$(play)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.stopAll",
-          "title": "Time Tracker: Stop All Timers",
-          "icon": "$(stop-circle)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.editTimer",
-          "title": "Time Tracker: Edit Timer",
-          "icon": "$(edit)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.deleteTimer",
-          "title": "Time Tracker: Delete Timer",
-          "icon": "$(trash)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.archiveTimer",
-          "title": "Time Tracker: Archive Timer",
-          "icon": "$(archive)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.newFolder",
-          "title": "Time Tracker: New Folder",
-          "icon": "$(new-folder)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.moveToFolder",
-          "title": "Time Tracker: Move to Folder",
-          "icon": "$(file-directory)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.moveTimerUp",
-          "title": "Time Tracker: Move Timer Up",
-          "icon": "$(arrow-up)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.moveTimerDown",
-          "title": "Time Tracker: Move Timer Down",
-          "icon": "$(arrow-down)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.refresh",
-          "title": "Time Tracker: Refresh",
-          "icon": "$(refresh)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.toggleEnabled",
-          "title": "Time Tracker: Enable/Disable",
-          "icon": "$(circle-slash)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.toggleBranchAutomation",
-          "title": "Time Tracker: Toggle Branch Automation",
-          "icon": "$(git-branch)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.focusView",
-          "title": "Time Tracker: Focus View",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.createSubTimer",
-          "title": "Time Tracker: Create SubTimer",
-          "icon": "$(add)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.startSubTimer",
-          "title": "Time Tracker: Resume SubTimer",
-          "icon": "$(play)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.stopSubTimer",
-          "title": "Time Tracker: Stop SubTimer",
-          "icon": "$(debug-stop)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.editSubTimer",
-          "title": "Time Tracker: Rename SubTimer",
-          "icon": "$(edit)",
-          "category": "Task and Documentation Hub"
-        },
-        {
-          "command": "timeTracker.deleteSubTimer",
-          "title": "Time Tracker: Delete SubTimer",
-          "icon": "$(trash)",
-          "category": "Task and Documentation Hub"
-        }
-      ],
+      {
+        "command": "testRunner.gotoTest",
+        "title": "Test Runner: Open Test",
+        "icon": "$(go-to-file)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.startTimer",
+        "title": "Time Tracker: Start Timer",
+        "icon": "$(play)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.stopTimer",
+        "title": "Time Tracker: Stop Timer",
+        "icon": "$(debug-stop)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.resumeTimer",
+        "title": "Time Tracker: Resume Timer",
+        "icon": "$(play)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.stopAll",
+        "title": "Time Tracker: Stop All Timers",
+        "icon": "$(stop-circle)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.editTimer",
+        "title": "Time Tracker: Edit Timer",
+        "icon": "$(edit)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.deleteTimer",
+        "title": "Time Tracker: Delete Timer",
+        "icon": "$(trash)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.archiveTimer",
+        "title": "Time Tracker: Archive Timer",
+        "icon": "$(archive)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.newFolder",
+        "title": "Time Tracker: New Folder",
+        "icon": "$(new-folder)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.moveToFolder",
+        "title": "Time Tracker: Move to Folder",
+        "icon": "$(file-directory)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.moveTimerUp",
+        "title": "Time Tracker: Move Timer Up",
+        "icon": "$(arrow-up)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.moveTimerDown",
+        "title": "Time Tracker: Move Timer Down",
+        "icon": "$(arrow-down)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.refresh",
+        "title": "Time Tracker: Refresh",
+        "icon": "$(refresh)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.toggleEnabled",
+        "title": "Time Tracker: Enable/Disable",
+        "icon": "$(circle-slash)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.toggleBranchAutomation",
+        "title": "Time Tracker: Toggle Branch Automation",
+        "icon": "$(git-branch)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.focusView",
+        "title": "Time Tracker: Focus View",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.createSubTimer",
+        "title": "Time Tracker: Create SubTimer",
+        "icon": "$(add)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.startSubTimer",
+        "title": "Time Tracker: Resume SubTimer",
+        "icon": "$(play)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.stopSubTimer",
+        "title": "Time Tracker: Stop SubTimer",
+        "icon": "$(debug-stop)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.editSubTimer",
+        "title": "Time Tracker: Rename SubTimer",
+        "icon": "$(edit)",
+        "category": "Task and Documentation Hub"
+      },
+      {
+        "command": "timeTracker.deleteSubTimer",
+        "title": "Time Tracker: Delete SubTimer",
+        "icon": "$(trash)",
+        "category": "Task and Documentation Hub"
+      }
+    ],
     "menus": {
       "view/title": [
         {
@@ -520,41 +525,46 @@
           "when": "view == testRunnerTree",
           "group": "navigation@5"
         },
-                  {
-            "command": "testRunner.refresh",
-            "when": "view == testRunnerTree",
-            "group": "navigation@6"
-          },
-          {
-            "command": "timeTracker.startTimer",
-            "when": "view == timeTrackerTree",
-            "group": "navigation@1"
-          },
-          {
-            "command": "timeTracker.stopAll",
-            "when": "view == timeTrackerTree",
-            "group": "navigation@2"
-          },
-          {
-            "command": "timeTracker.newFolder",
-            "when": "view == timeTrackerTree",
-            "group": "navigation@3"
-          },
-          {
-            "command": "timeTracker.refresh",
-            "when": "view == timeTrackerTree",
-            "group": "navigation@4"
-          },
-          {
-            "command": "timeTracker.toggleEnabled",
-            "when": "view == timeTrackerTree",
-            "group": "navigation@5"
-          }
-        ],
-        "view/item/context": [
+        {
+          "command": "testRunner.refresh",
+          "when": "view == testRunnerTree",
+          "group": "navigation@6"
+        },
+        {
+          "command": "timeTracker.startTimer",
+          "when": "view == timeTrackerTree",
+          "group": "navigation@1"
+        },
+        {
+          "command": "timeTracker.stopAll",
+          "when": "view == timeTrackerTree",
+          "group": "navigation@2"
+        },
+        {
+          "command": "timeTracker.newFolder",
+          "when": "view == timeTrackerTree",
+          "group": "navigation@3"
+        },
+        {
+          "command": "timeTracker.refresh",
+          "when": "view == timeTrackerTree",
+          "group": "navigation@4"
+        },
+        {
+          "command": "timeTracker.toggleEnabled",
+          "when": "view == timeTrackerTree",
+          "group": "navigation@5"
+        }
+      ],
+      "view/item/context": [
         {
           "command": "commandManager.runCommand",
           "when": "view == commandManagerTree && viewItem == command",
+          "group": "inline@1"
+        },
+        {
+          "command": "commandManager.runCommand",
+          "when": "view == commandManagerTree && viewItem == command.imported",
           "group": "inline@1"
         },
         {
@@ -568,6 +578,11 @@
           "group": "1_actions@1"
         },
         {
+          "command": "commandManager.runCommand",
+          "when": "view == commandManagerTree && viewItem == command.imported",
+          "group": "1_actions@1"
+        },
+        {
           "command": "commandManager.editCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "1_actions@2"
@@ -576,6 +591,16 @@
           "command": "commandManager.pinToStatusBar",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "1_actions@3"
+        },
+        {
+          "command": "commandManager.pinToStatusBar",
+          "when": "view == commandManagerTree && viewItem == command.imported",
+          "group": "1_actions@3"
+        },
+        {
+          "command": "commandManager.convertWorkspaceTask",
+          "when": "view == commandManagerTree && viewItem == command.imported",
+          "group": "2_modify@1"
         },
         {
           "command": "commandManager.duplicateCommand",
@@ -599,7 +624,7 @@
         },
         {
           "command": "commandManager.deleteItem",
-          "when": "view == commandManagerTree",
+          "when": "view == commandManagerTree && (viewItem == command || viewItem == folder)",
           "group": "2_modify@5"
         },
         {
@@ -737,109 +762,108 @@
           "when": "view == testRunnerTree && viewItem == testRunnerFile",
           "group": "inline@1"
         },
-                  {
-            "command": "testRunner.runTestCase",
-            "when": "view == testRunnerTree && viewItem == testRunnerTestCase",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.stopTimer",
-            "when": "view == timeTrackerTree && viewItem == timerRunning",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.editTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "inline@2"
-          },
-          {
-            "command": "timeTracker.archiveTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "inline@3"
-          },
-          {
-            "command": "timeTracker.toggleBranchAutomation",
-            "when": "view == timeTrackerTree && viewItem == timerGitBranchesFolder",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.startTimer",
-            "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.startTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped) && viewItem != 'timerRunning timerHasSubtimers' && viewItem != 'timerStopped timerHasSubtimers' && viewItem != 'timerRunning timerArchived timerHasSubtimers' && viewItem != 'timerStopped timerArchived timerHasSubtimers'",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.resumeTimer",
-            "when": "view == timeTrackerTree && (viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.createSubTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "inline@4"
-          },
-          {
-            "command": "timeTracker.archiveTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
-            "group": "1_actions@3"
-          },
-          {
-            "command": "timeTracker.deleteTimer",
-            "when": "view == timeTrackerTree && (viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
-            "group": "1_actions@4"
-          },
-          {
-            "command": "timeTracker.moveTimerUp",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "2_modify@1"
-          },
-          {
-            "command": "timeTracker.moveTimerDown",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "2_modify@2"
-          },
-          {
-            "command": "timeTracker.moveToFolder",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "2_modify@3"
-          },
-          {
-            "command": "timeTracker.createSubTimer",
-            "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
-            "group": "3_new@1"
-          },
-          {
-            "command": "timeTracker.stopSubTimer",
-            "when": "view == timeTrackerTree && viewItem == subtimerRunning",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.editSubTimer",
-            "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
-            "group": "inline@2"
-          },
-          {
-            "command": "timeTracker.startSubTimer",
-            "when": "view == timeTrackerTree && viewItem == subtimerStopped",
-            "group": "inline@1"
-          },
-          {
-            "command": "timeTracker.deleteSubTimer",
-            "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
-            "group": "1_actions@2"
-          },
-
-          {
-            "command": "timeTracker.newFolder",
-            "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
-            "group": "3_new@2"
-          }
-        ]
-      },
+        {
+          "command": "testRunner.runTestCase",
+          "when": "view == testRunnerTree && viewItem == testRunnerTestCase",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.stopTimer",
+          "when": "view == timeTrackerTree && viewItem == timerRunning",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.editTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "inline@2"
+        },
+        {
+          "command": "timeTracker.archiveTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "inline@3"
+        },
+        {
+          "command": "timeTracker.toggleBranchAutomation",
+          "when": "view == timeTrackerTree && viewItem == timerGitBranchesFolder",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.startTimer",
+          "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.startTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped) && viewItem != 'timerRunning timerHasSubtimers' && viewItem != 'timerStopped timerHasSubtimers' && viewItem != 'timerRunning timerArchived timerHasSubtimers' && viewItem != 'timerStopped timerArchived timerHasSubtimers'",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.resumeTimer",
+          "when": "view == timeTrackerTree && (viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.createSubTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "inline@4"
+        },
+        {
+          "command": "timeTracker.archiveTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
+          "group": "1_actions@3"
+        },
+        {
+          "command": "timeTracker.deleteTimer",
+          "when": "view == timeTrackerTree && (viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
+          "group": "1_actions@4"
+        },
+        {
+          "command": "timeTracker.moveTimerUp",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "2_modify@1"
+        },
+        {
+          "command": "timeTracker.moveTimerDown",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "2_modify@2"
+        },
+        {
+          "command": "timeTracker.moveToFolder",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "2_modify@3"
+        },
+        {
+          "command": "timeTracker.createSubTimer",
+          "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
+          "group": "3_new@1"
+        },
+        {
+          "command": "timeTracker.stopSubTimer",
+          "when": "view == timeTrackerTree && viewItem == subtimerRunning",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.editSubTimer",
+          "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
+          "group": "inline@2"
+        },
+        {
+          "command": "timeTracker.startSubTimer",
+          "when": "view == timeTrackerTree && viewItem == subtimerStopped",
+          "group": "inline@1"
+        },
+        {
+          "command": "timeTracker.deleteSubTimer",
+          "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "timeTracker.newFolder",
+          "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
+          "group": "3_new@2"
+        }
+      ]
+    },
     "configuration": {
       "title": "Task and Documentation Hub",
       "properties": {
@@ -878,6 +902,9 @@
     "test:ui:single": "npx wdio run wdio.conf.js --spec",
     "test:all": "npm test && npm run test:playwright && npm run test:ui",
     "test:vet": "vscode-extension-tester --config ./et-tests/mocha-vscode.json"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

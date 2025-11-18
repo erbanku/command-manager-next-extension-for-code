@@ -24,7 +24,15 @@ export class CommandTreeItem extends vscode.TreeItem {
       this.id = `command:${command.id}`;
     }
 
-    this.contextValue = type;
+    if (type === 'command') {
+      const command = item as Command;
+      this.contextValue = command.readOnly ? 'command.imported' : 'command';
+    } else if (type === 'folder') {
+      const folder = item as Folder;
+      this.contextValue = folder.readOnly ? 'folder.imported' : 'folder';
+    } else {
+      this.contextValue = type;
+    }
     this.tooltip = this.getTooltip();
     this.iconPath = this.getIcon();
     this.description = this.getDescription();
@@ -61,7 +69,11 @@ export class CommandTreeItem extends vscode.TreeItem {
       return new vscode.ThemeIcon('folder');
     } else {
       const command = this.item as Command;
-      
+
+      if (command.readOnly) {
+        return new vscode.ThemeIcon('tasklist');
+      }
+
       // Override icon based on execution state
       switch (this._executionState) {
         case ExecutionState.Running:
@@ -98,6 +110,9 @@ export class CommandTreeItem extends vscode.TreeItem {
   private getDescription(): string {
     if (this.type === 'command') {
       const command = this.item as Command;
+      if (command.readOnly) {
+        return 'tasks.json';
+      }
       return command.terminal.type;
     } else {
       const folder = this.item as Folder;

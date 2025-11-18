@@ -74,6 +74,57 @@ export class TimeTrackerManager {
     return false;
   }
 
+  private detectAndHandleUnexpectedShutdown(timer: Timer, subtimer: SubTimer, nowMs: number): boolean {
+    // Only detect if there's a persisted elapsed time to compare against
+    if (subtimer.lastPersistedElapsedTime === undefined) {
+      return false;
+    }
+
+    // When resuming a paused subtimer, check the gap between when it was paused and now
+    // If it was paused, use endTime; if it was running, use lastResumeTime
+    const previousStopTime = subtimer.endTime 
+      ? new Date(subtimer.endTime).getTime()
+      : (subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime).getTime() : new Date(subtimer.startTime).getTime());
+    
+    // Calculate expected elapsed time based on current state
+    // If paused, expected elapsed is just the accumulated time (no new time since pause)
+    // If was running (which shouldn't happen when resuming), calculate from last resume
+    const currentElapsed = subtimer.endTime
+      ? (subtimer.totalElapsedTime ?? 0) // Paused: no new time accumulated
+      : this.calculateCurrentElapsedTime(subtimer, nowMs); // Was running (edge case)
+    
+    // Calculate the time gap since last known state
+    const timeGap = nowMs - previousStopTime;
+    
+    // The drift is the difference between what we expect based on last persist and what we calculate now
+    // If subtimer was paused, we use the paused elapsed time
+    // If there's a large time gap (> tolerance) between when it was paused/resumed and now,
+    // it likely means VS Code was closed
+    const expectedElapsed = currentElapsed;
+    const drift = Math.abs(expectedElapsed - subtimer.lastPersistedElapsedTime);
+
+    // If drift is too large (> 90 seconds), or if there's a large time gap, VS Code was likely closed unexpectedly
+    const largeTimeGap = timeGap > TimeTrackerManager.ELAPSED_DRIFT_TOLERANCE_MS;
+    const largeDrift = drift > TimeTrackerManager.ELAPSED_DRIFT_TOLERANCE_MS;
+
+    if (largeTimeGap || largeDrift) {
+      // Use the minimum of expected and persisted to avoid inflating time
+      const previousElapsedMs = subtimer.lastPersistedElapsedTime ?? 0;
+      const baseline = Math.min(expectedElapsed, previousElapsedMs);
+      const normalizedBaseline = Math.max(0, Math.floor(baseline));
+
+      subtimer.totalElapsedTime = normalizedBaseline;
+      subtimer.lastPersistedElapsedTime = normalizedBaseline;
+
+      const previousElapsedFormatted = this.formatElapsedForLog(previousElapsedMs);
+      const newElapsedFormatted = this.formatElapsedForLog(normalizedBaseline);
+      this.addLog(timer, `[${subtimer.label}] - VS Code closed unexpectedly. Restored elapsed time from ${previousElapsedFormatted} to ${newElapsedFormatted}.`);
+      return true;
+    }
+
+    return false;
+  }
+
   private formatElapsedForLog(ms: number): string {
     const totalSeconds = Math.max(0, Math.floor(ms / 1000));
     const hours = Math.floor(totalSeconds / 3600);
@@ -1065,6 +1116,10 @@ export class TimeTrackerManager {
       if (timer && timer.subtimers) {
         const subtimer = timer.subtimers.find(st => st.id === subtimerId);
         if (subtimer && subtimer.endTime === autoPausedTime) {
+          // Check for unexpected shutdown before resuming (compares last resume time with current time)
+          const nowMs = now.getTime();
+          this.detectAndHandleUnexpectedShutdown(timer, subtimer, nowMs);
+          
           subtimer.endTime = undefined;
           subtimer.lastResumeTime = resumeIso;
           this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
@@ -1184,7 +1239,8 @@ export class TimeTrackerManager {
     if (subtimer && subtimer.endTime) {
       // Resume: clear endTime to make it running again
       // Note: elapsed time was already accumulated when it was paused, so we don't need to do it here
-      const now = new Date().toISOString();
+      const nowMs = Date.now();
+      const now = new Date(nowMs).toISOString();
       
       // Initialize totalElapsedTime if not set (for backward compatibility with old subtimers)
       if (subtimer.totalElapsedTime === undefined) {
@@ -1193,6 +1249,9 @@ export class TimeTrackerManager {
         const pauseTime = new Date(subtimer.endTime);
         subtimer.totalElapsedTime = pauseTime.getTime() - start.getTime();
       }
+      
+      // Check for unexpected shutdown before resuming (compares last resume time with current time)
+      this.detectAndHandleUnexpectedShutdown(timer, subtimer, nowMs);
       
       // Set new resume time (now)
       subtimer.endTime = undefined;

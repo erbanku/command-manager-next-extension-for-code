@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import { CommandConfig, Folder, Command, ExecutionState } from '../../../src/types';
 import { ConfigManager } from '../../../src/config/ConfigManager';
 import { CommandTreeItem } from './CommandTreeItem';
@@ -15,6 +17,7 @@ import {
   moveFolderInConfig,
   pathsEqual
 } from './moveOperations';
+import { convertTasksJsonContent } from '../import/tasksJsonImporter';
 
 const TREE_MIME_TYPE = 'application/vnd.code.tree.commandmanagertree';
 
@@ -28,11 +31,22 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
 
   private configManager: ConfigManager;
   private commandTreeItems: Map<string, CommandTreeItem> = new Map();
+  private importedTasks: Command[] = [];
+  private tasksWatcher?: vscode.FileSystemWatcher;
+  private workspaceRoot?: string;
   public readonly dragAndDropController: vscode.TreeDragAndDropController<CommandTreeItem>;
 
   constructor() {
     this.configManager = ConfigManager.getInstance();
     this.configManager.setOnConfigChange(() => this.refresh());
+    this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!this.workspaceRoot) {
+      const overrideRoot = process.env.COMMAND_MANAGER_CONFIG_ROOT;
+      if (overrideRoot) {
+        this.workspaceRoot = path.resolve(path.join(overrideRoot, '..'));
+      }
+    }
+    void this.initializeWorkspaceTasks();
     this.dragAndDropController = {
       dragMimeTypes: [TREE_MIME_TYPE],
       dropMimeTypes: [TREE_MIME_TYPE],
@@ -70,6 +84,19 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
       const folderItem = new CommandTreeItem(folder, 'folder', undefined, [index]);
       items.push(folderItem);
     });
+
+    if (this.importedTasks.length > 0) {
+      const virtualFolder: Folder = {
+        name: 'tasks.json',
+        icon: '$(tasklist)',
+        description: 'Imported VS Code tasks',
+        commands: this.importedTasks,
+        readOnly: true,
+        source: 'vscode-task'
+      };
+      const folderItem = new CommandTreeItem(virtualFolder, 'folder', undefined, [-1]);
+      items.push(folderItem);
+    }
 
     return items;
   }
@@ -153,7 +180,7 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
 
   public async getAllCommands(): Promise<Command[]> {
     const config = this.configManager.getConfig();
-    return this.getAllCommandsFromFolders(config.folders);
+    return [...this.getAllCommandsFromFolders(config.folders), ...this.importedTasks];
   }
 
   private getAllCommandsFromFolders(folders: Folder[]): Command[] {
@@ -223,7 +250,7 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
     source.forEach(item => {
       if (item.isCommand()) {
         const command = item.getCommand();
-        if (command) {
+        if (command && !command.readOnly) {
           dragItems.push({
             kind: 'command',
             path: item.getFolderPath(),
@@ -231,10 +258,13 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
           });
         }
       } else if (item.isFolder()) {
-        dragItems.push({
-          kind: 'folder',
-          path: item.getFolderPath()
-        });
+        const folder = item.getFolder();
+        if (folder && !folder.readOnly) {
+          dragItems.push({
+            kind: 'folder',
+            path: item.getFolderPath()
+          });
+        }
       }
     });
 
@@ -433,6 +463,20 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
       folderPath: item.getFolderPath()
     });
 
+    if (item.isCommand()) {
+      const command = item.getCommand();
+      if (command?.readOnly) {
+        DebugLogger.log(DebugTag.MOVE, 'Move skipped: command is read-only');
+        return;
+      }
+    } else if (item.isFolder()) {
+      const folder = item.getFolder();
+      if (folder?.readOnly) {
+        DebugLogger.log(DebugTag.MOVE, 'Move skipped: folder is read-only');
+        return;
+      }
+    }
+
     const config = this.configManager.getConfig();
     let changed = false;
 
@@ -519,7 +563,7 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
 
     if (item.isCommand()) {
       const command = item.getCommand();
-      if (!command) {
+      if (!command || command.readOnly) {
         return;
       }
 
@@ -530,6 +574,10 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
 
       changed = moveCommandInConfig(config, { path: item.getFolderPath(), commandId: command.id }, { folderPath: destinationPath });
     } else if (item.isFolder()) {
+      const folder = item.getFolder();
+      if (!folder || folder.readOnly) {
+        return;
+      }
       if (isAncestorPath(item.getFolderPath(), destinationPath)) {
         void vscode.window.showWarningMessage('Cannot move a folder into its own subfolder.');
         return;
@@ -589,5 +637,60 @@ export class CommandTreeProvider implements vscode.TreeDataProvider<CommandTreeI
     this._onDidChangeTreeData.dispose();
     this.commandTreeItems.clear();
     this.configManager = null as any;
+    this.tasksWatcher?.dispose();
+  }
+
+  private async initializeWorkspaceTasks(): Promise<void> {
+    await this.reloadWorkspaceTasks();
+    this.setupWorkspaceTasksWatcher();
+  }
+
+  private async reloadWorkspaceTasks(): Promise<void> {
+    const tasksUri = this.getTasksFileUri();
+    if (!tasksUri) {
+      this.importedTasks = [];
+      this.refresh();
+      return;
+    }
+
+    try {
+      const content = await fs.promises.readFile(tasksUri.fsPath, 'utf8');
+      this.importedTasks = convertTasksJsonContent(content, this.workspaceRoot);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        this.importedTasks = [];
+      }
+      // For parse errors we simply skip importing without surfacing to the user.
+    }
+    this.refresh();
+  }
+
+  private setupWorkspaceTasksWatcher(): void {
+    if (!this.workspaceRoot) {
+      return;
+    }
+
+    const pattern = new vscode.RelativePattern(this.workspaceRoot, '.vscode/tasks.json');
+    this.tasksWatcher = vscode.workspace.createFileSystemWatcher(pattern);
+
+    const reload = () => void this.reloadWorkspaceTasks();
+
+    this.tasksWatcher.onDidChange(reload);
+    this.tasksWatcher.onDidCreate(reload);
+    this.tasksWatcher.onDidDelete(() => {
+      this.importedTasks = [];
+      this.refresh();
+    });
+  }
+
+  private getTasksFileUri(): vscode.Uri | undefined {
+    if (!this.workspaceRoot) {
+      return undefined;
+    }
+    const tasksPath = path.join(this.workspaceRoot, '.vscode', 'tasks.json');
+    if (!fs.existsSync(tasksPath)) {
+      return undefined;
+    }
+    return vscode.Uri.file(tasksPath);
   }
 }

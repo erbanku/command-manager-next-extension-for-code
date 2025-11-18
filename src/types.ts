@@ -52,6 +52,8 @@ export interface Folder {
   description?: string;
   commands: Command[];
   subfolders?: Folder[];
+  readOnly?: boolean;
+  source?: 'config' | 'vscode-task';
 }
 
 export interface Command {
@@ -62,6 +64,8 @@ export interface Command {
   variables?: CommandVariable[];
   description?: string;
   icon?: string;
+  readOnly?: boolean;
+  source?: 'config' | 'vscode-task';
 }
 
 export interface TerminalConfig {

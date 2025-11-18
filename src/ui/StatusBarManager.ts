@@ -26,6 +26,17 @@ export class StatusBarManager implements vscode.Disposable {
       void this.handleConfigChange();
     });
 
+    const treeDisposable = this.treeProvider.onDidChangeTreeData(() => {
+      if (this.isRebuilding) {
+        return;
+      }
+      void (async () => {
+        await this.rebuildPinnedItems();
+        await this.updateCommandsTooltip();
+      })();
+    });
+    this.context.subscriptions.push(treeDisposable);
+
     void this.restorePinnedCommands();
     void this.updateCommandsTooltip();
   }

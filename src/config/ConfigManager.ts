@@ -138,22 +138,25 @@ export class ConfigManager {
       await this.ensureCommandsDirectoryExists();
       await this.migrateLegacyTimeTrackerIfNeeded();
 
-      if (!fs.existsSync(this.timeTrackerConfigPath)) {
-        // No file yet: create one lazily so future loads have a source.
+      const fileExists = fs.existsSync(this.timeTrackerConfigPath);
+      
+      if (!fileExists) {
+        // Only create file if it doesn't exist at all - never recreate on failure
         this.timeTrackerConfig = getDefaultTimeTrackerConfig();
         await this.saveTimeTrackerConfig(this.timeTrackerConfig, { suppressNotification: true });
         await this.writeTimeTrackerBackup();
         return;
       }
 
+      // File exists - try to load it
       const configData = await fs.promises.readFile(this.timeTrackerConfigPath, 'utf8');
 
       if (!configData.trim()) {
-        // Empty file usually means a crash or interrupted save; attempt recovery.
-        if (await this.attemptRestoreTimeTrackerConfigFromBackup('Time tracker configuration file was empty. Restored the most recent backup.')) {
+        // Empty file usually means a crash or interrupted save; attempt recovery from backup.
+        if (await this.attemptRestoreTimeTrackerConfigFromBackup('Time tracker configuration file was empty. Restored from backup file.')) {
           return;
         }
-        vscode.window.showWarningMessage('Time tracker configuration file is empty. Falling back to defaults in memory; please fix or replace the file to restore your data.');
+        vscode.window.showWarningMessage('Time tracker configuration file is empty and no backup was found. Using defaults in memory; the file was left untouched so you can recover it manually.');
         this.timeTrackerConfig = getDefaultTimeTrackerConfig();
         return;
       }
@@ -163,10 +166,10 @@ export class ConfigManager {
         parsedConfig = JSON.parse(configData);
       } catch (parseError) {
         // Corrupted JSON: try the backup before falling back.
-        if (await this.attemptRestoreTimeTrackerConfigFromBackup('Time tracker configuration file was corrupted. Restored the most recent backup.')) {
+        if (await this.attemptRestoreTimeTrackerConfigFromBackup('Time tracker configuration file was corrupted. Restored from backup file.')) {
           return;
         }
-        vscode.window.showErrorMessage('Failed to parse time tracker configuration. Loaded defaults in memory but left the file untouched so you can recover it manually.');
+        vscode.window.showErrorMessage('Failed to parse time tracker configuration and no backup was found. Using defaults in memory; the file was left untouched so you can recover it manually.');
         this.timeTrackerConfig = getDefaultTimeTrackerConfig();
         return;
       }
@@ -181,19 +184,20 @@ export class ConfigManager {
       }
 
       // Invalid structure: prefer backup recovery; otherwise fall back without touching disk.
-      if (await this.attemptRestoreTimeTrackerConfigFromBackup('Invalid time tracker configuration detected. Restored the most recent backup.')) {
+      if (await this.attemptRestoreTimeTrackerConfigFromBackup('Invalid time tracker configuration detected. Restored from backup file.')) {
         return;
       }
       vscode.window.showWarningMessage(
-        `Invalid time tracker configuration file: ${validation.errors.join(', ')}. Loaded defaults in memory but left the file untouched so you can repair it.`
+        `Invalid time tracker configuration file: ${validation.errors.join(', ')}. No backup found. Using defaults in memory; the file was left untouched so you can repair it.`
       );
       this.timeTrackerConfig = getDefaultTimeTrackerConfig();
     } catch (error) {
-      if (await this.attemptRestoreTimeTrackerConfigFromBackup()) {
+      // On any error, try backup first
+      if (await this.attemptRestoreTimeTrackerConfigFromBackup('Failed to load time tracker configuration. Restored from backup file.')) {
         return;
       }
       const message = error instanceof Error ? error.message : String(error);
-      vscode.window.showErrorMessage(`Failed to load time tracker configuration (${message}). Loaded defaults in memory but left the file untouched.`);
+      vscode.window.showErrorMessage(`Failed to load time tracker configuration (${message}). No backup found. Using defaults in memory; the file was left untouched.`);
       this.timeTrackerConfig = getDefaultTimeTrackerConfig();
     }
   }
@@ -306,8 +310,9 @@ export class ConfigManager {
       this.notifyTimeTrackerChange();
     });
     this.timeTrackerWatcher.onDidDelete(async () => {
+      // Don't auto-recreate on deletion - only create if file doesn't exist at all during load
+      // This prevents overwriting files that might have been temporarily cleared
       this.timeTrackerConfig = getDefaultTimeTrackerConfig();
-      await this.saveTimeTrackerConfig(this.timeTrackerConfig, { suppressNotification: true });
       this.notifyTimeTrackerChange();
     });
   }
@@ -356,9 +361,9 @@ export class ConfigManager {
       await this.writeTimeTrackerConfigToDisk(this.timeTrackerConfig, { skipBackup: true });
       await this.writeTimeTrackerBackup();
 
-      if (message) {
-        vscode.window.showWarningMessage(message);
-      }
+      // Always show a message when restoring from backup
+      const displayMessage = message || 'Time tracker configuration restored from backup file.';
+      vscode.window.showInformationMessage(displayMessage);
 
       this.notifyTimeTrackerChange();
       return true;

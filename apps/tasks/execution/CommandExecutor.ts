@@ -59,10 +59,16 @@ export class CommandExecutor {
       }
 
       if (error instanceof MissingVariableError) {
-        vscode.window.showErrorMessage(
-          `Variable "${error.key}" is not configured. Please review the command before running it again.`
-        );
-        this.webviewManager?.showCommandEditor(command);
+        if (command.readOnly) {
+          vscode.window.showErrorMessage(
+            `Variable "${error.key}" is required by this VS Code task. Convert it to an editable task before configuring variables.`
+          );
+        } else {
+          vscode.window.showErrorMessage(
+            `Variable "${error.key}" is not configured. Please review the command before running it again.`
+          );
+          this.webviewManager?.showCommandEditor(command);
+        }
         return {
           success: false,
           error: error.message
