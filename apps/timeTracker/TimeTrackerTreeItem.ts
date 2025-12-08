@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Timer, TimerFolder, SubTimer } from '../../src/types';
+import { TimerHelpers } from './utils/TimerHelpers';
 
 export class TimeTrackerTreeItem extends vscode.TreeItem {
   public readonly subtimer?: SubTimer;
@@ -122,17 +123,7 @@ export class TimeTrackerTreeItem extends vscode.TreeItem {
   }
 
   private formatDuration(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
+    return TimerHelpers.formatElapsedTime(ms);
   }
 
   private getTimerTooltip(): string {
@@ -200,34 +191,7 @@ export class TimeTrackerTreeItem extends vscode.TreeItem {
   }
 
   private calculateSubtimerElapsedTime(subtimer: SubTimer): number {
-    // Initialize totalElapsedTime if not set (for backward compatibility with old subtimers)
-    const totalElapsed = subtimer.totalElapsedTime !== undefined ? subtimer.totalElapsedTime : 0;
-    
-    if (subtimer.endTime) {
-      // Subtimer is paused/stopped - use accumulated elapsed time
-      // For backward compatibility: if totalElapsedTime is 0 and we have endTime, calculate from start
-      if (totalElapsed === 0 && subtimer.lastResumeTime === undefined) {
-        const start = new Date(subtimer.startTime);
-        const end = new Date(subtimer.endTime);
-        return end.getTime() - start.getTime();
-      }
-      return totalElapsed;
-    } else {
-      // Subtimer is running - add current running segment to accumulated time
-      const lastResumeTime = subtimer.lastResumeTime 
-        ? new Date(subtimer.lastResumeTime) 
-        : new Date(subtimer.startTime);
-      const now = new Date();
-      const currentSegment = now.getTime() - lastResumeTime.getTime();
-      
-      // For backward compatibility: if totalElapsedTime is 0, calculate from start
-      if (totalElapsed === 0 && subtimer.lastResumeTime === undefined) {
-        const start = new Date(subtimer.startTime);
-        return now.getTime() - start.getTime();
-      }
-      
-      return totalElapsed + currentSegment;
-    }
+    return TimerHelpers.calculateSubtimerElapsed(subtimer, Date.now());
   }
 
   private getSubTimerDescription(): string {

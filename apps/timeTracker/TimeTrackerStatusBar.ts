@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TimeTrackerManager } from './TimeTrackerManager';
 import { Timer, SubTimer } from '../../src/types';
+import { TimerHelpers } from './utils/TimerHelpers';
 
 export class TimeTrackerStatusBar implements vscode.Disposable {
   private statusBarItem: vscode.StatusBarItem;
@@ -13,20 +14,17 @@ export class TimeTrackerStatusBar implements vscode.Disposable {
     this.statusBarItem.command = 'timeTracker.focusView';
     context.subscriptions.push(this.statusBarItem);
 
-    // Update every 30 seconds
+    // Subscribe to manager change events
+    this.timeTrackerManager.onDidChange(() => this.update());
+
+    // Keep interval for live elapsed time updates
+    // This is necessary because elapsed time changes every second even without state changes
     this.updateInterval = setInterval(() => {
       this.update();
     }, 30000);
 
     // Initial update
     this.update();
-
-    // Update when timers change
-    const { ConfigManager } = require('../../src/config/ConfigManager');
-    const configManager = ConfigManager.getInstance();
-    configManager.setOnTimeTrackerChange(() => {
-      this.update();
-    });
   }
 
   public update(): void {
@@ -62,56 +60,20 @@ export class TimeTrackerStatusBar implements vscode.Disposable {
 
   private getRunningTimer(): Timer | null {
     const config = this.timeTrackerManager.getConfig();
-    const findAllTimers = (folders: any[]): Timer[] => {
-      const timers: Timer[] = [];
-      for (const folder of folders) {
-        timers.push(...folder.timers);
-        if (folder.subfolders) {
-          timers.push(...findAllTimers(folder.subfolders));
-        }
-      }
-      return timers;
-    };
-
-    const allTimers = findAllTimers(config.folders || []);
-    
-    // Find the first timer with a running subtimer
-    for (const timer of allTimers) {
-      if (timer.subtimers && timer.subtimers.some(st => !st.endTime)) {
-        return timer;
-      }
-    }
-
-    return null;
+    const runningTimers = TimerHelpers.getRunningTimers(config.folders || []);
+    return runningTimers.length > 0 ? runningTimers[0] : null;
   }
 
   private calculateElapsedTime(timer: Timer): number {
-    if (!timer.subtimers) return 0;
-
-    let totalMs = 0;
-    const now = Date.now();
-
-    for (const subtimer of timer.subtimers) {
-      const startTime = new Date(subtimer.startTime).getTime();
-      const endTime = subtimer.endTime ? new Date(subtimer.endTime).getTime() : now;
-      totalMs += (endTime - startTime);
-    }
-
+    // CRITICAL BUG FIX: Use TimerHelpers.calculateTimerElapsed which properly accounts for pause/resume
+    // Old implementation incorrectly calculated endTime - startTime, ignoring pauses
+    const totalMs = TimerHelpers.calculateTimerElapsed(timer, Date.now());
     return Math.floor(totalMs / 1000); // Return seconds
   }
 
   private formatTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
-    } else {
-      return `${secs}s`;
-    }
+    // Convert seconds to milliseconds for TimerHelpers.formatElapsedTime
+    return TimerHelpers.formatElapsedTime(seconds * 1000);
   }
 
   public dispose(): void {

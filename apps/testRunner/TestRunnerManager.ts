@@ -1333,7 +1333,9 @@ class PythonPattern extends BasePattern implements LanguagePattern {
         qualified = `${containing[0].name}.${method}`;
       }
 
-      if (!this.matchesAny(qualified, testNamePatterns)) continue;
+      // Match test name pattern against method name only (not class name)
+      // This allows ANY test case class name to match
+      if (!this.matchesAny(method, testNamePatterns)) continue;
       // Check ignore patterns against both test name and file/folder path
       if (this.shouldIgnoreTest(qualified, relativeFilePath, ignorePatterns)) continue;
 

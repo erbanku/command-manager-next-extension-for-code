@@ -13,7 +13,7 @@ export class CommandTreeItem extends vscode.TreeItem {
   ) {
     super(
       type === 'folder' ? (item as Folder).name : (item as Command).label,
-      type === 'folder' ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
+      type === 'folder' ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None
     );
 
     if (type === 'folder') {

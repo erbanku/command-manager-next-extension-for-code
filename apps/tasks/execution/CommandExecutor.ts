@@ -90,9 +90,11 @@ export class CommandExecutor {
 
     for (const variable of variables) {
       const escapedKey = variable.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Allow metadata suffixes (e.g., :helptext="...") on variables but strip them from execution
+      const metadataPattern = String.raw`(?::[A-Za-z0-9_-]+(?:=(?:"[^"]*"|'[^']*'|[^\s"']+))?)?`;
       const patterns = [
-        new RegExp(`\\$\\{${escapedKey}\\}`, 'g'),
-        new RegExp(`\\$${escapedKey}(?![\\w-])`, 'g')
+        new RegExp(`\\$\\{${escapedKey}${metadataPattern}\\}`, 'g'),
+        new RegExp(`\\$${escapedKey}${metadataPattern}(?![\\w-])`, 'g')
       ];
 
       patterns.forEach(pattern => {

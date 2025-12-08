@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ConfigManager } from '../../src/config/ConfigManager';
 import { Timer, TimerFolder, TimeTrackerConfig, SubTimer } from '../../src/types';
 import * as crypto from 'crypto';
+import { TimerHelpers } from './utils/TimerHelpers';
 
 export class TimeTrackerManager {
   private static instance: TimeTrackerManager;
@@ -11,14 +12,38 @@ export class TimeTrackerManager {
   private currentBranch?: string;
   private activeTimers: Map<string, Timer> = new Map(); // Timer ID -> Timer
   private workspaceState?: vscode.Memento;
+  private configFileWatcher?: vscode.FileSystemWatcher;
+
+  // Event emitters for state changes
+  private readonly _onDidChange = new vscode.EventEmitter<void>();
+  private readonly _onTimerStateChange = new vscode.EventEmitter<string>();
+
+  public readonly onDidChange: vscode.Event<void> = this._onDidChange.event;
+  public readonly onTimerStateChange: vscode.Event<string> = this._onTimerStateChange.event;
 
   private constructor() {
     this.configManager = ConfigManager.getInstance();
     this.configManager.setOnTimeTrackerChange(() => {
       // Refresh active timers from config
       this.refreshActiveTimers();
+      // Fire change event to notify subscribers
+      this._onDidChange.fire();
     });
     this.refreshActiveTimers();
+
+    // Watch config file for external changes
+    this.initializeConfigFileWatcher();
+  }
+
+  private initializeConfigFileWatcher(): void {
+    const configPath = this.configManager.getConfigPath();
+    this.configFileWatcher = vscode.workspace.createFileSystemWatcher(configPath);
+
+    this.configFileWatcher.onDidChange(() => {
+      // Config file changed externally, refresh active timers and notify
+      this.refreshActiveTimers();
+      this._onDidChange.fire();
+    });
   }
 
   public setWorkspaceState(workspaceState: vscode.Memento): void {
@@ -50,19 +75,7 @@ export class TimeTrackerManager {
   }
 
   private calculateCurrentElapsedTime(subtimer: SubTimer, referenceTimeMs: number): number {
-    const baseElapsed = subtimer.totalElapsedTime ?? 0;
-    if (!subtimer.endTime) {
-      const resumeSource = subtimer.lastResumeTime ?? subtimer.startTime;
-      const resumeTime = new Date(resumeSource).getTime();
-      if (!Number.isFinite(resumeTime)) {
-        return baseElapsed;
-      }
-      const delta = referenceTimeMs - resumeTime;
-      if (delta > 0) {
-        return baseElapsed + delta;
-      }
-    }
-    return baseElapsed;
+    return TimerHelpers.calculateSubtimerElapsed(subtimer, referenceTimeMs);
   }
 
   private syncLastPersistedElapsedTime(subtimer: SubTimer, elapsedMs: number): boolean {
@@ -126,21 +139,7 @@ export class TimeTrackerManager {
   }
 
   private formatElapsedForLog(ms: number): string {
-    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const parts: string[] = [];
-    if (hours > 0) {
-      parts.push(`${hours}h`);
-    }
-    if (minutes > 0 || hours > 0) {
-      parts.push(`${minutes}m`);
-    }
-    parts.push(`${seconds}s`);
-
-    return parts.join(' ');
+    return TimerHelpers.formatElapsedTime(ms);
   }
 
   public getConfig(): TimeTrackerConfig {
@@ -183,20 +182,12 @@ export class TimeTrackerManager {
   private refreshActiveTimers(): void {
     const config = this.getConfigInternal();
     this.activeTimers.clear();
-    const findAllTimers = (folders: TimerFolder[]): void => {
-      for (const folder of folders) {
-        for (const timer of folder.timers) {
-          // Timer is active if it has at least one running subtimer and is not archived
-          if (!timer.archived && timer.subtimers && timer.subtimers.some(st => !st.endTime)) {
-            this.activeTimers.set(timer.id, timer);
-          }
-        }
-        if (folder.subfolders) {
-          findAllTimers(folder.subfolders);
-        }
+    TimerHelpers.forEachTimer(config.folders, (timer) => {
+      // Timer is active if it has at least one running subtimer and is not archived
+      if (!timer.archived && timer.subtimers && timer.subtimers.some(st => !st.endTime)) {
+        this.activeTimers.set(timer.id, timer);
       }
-    };
-    findAllTimers(config.folders);
+    });
   }
 
   public async startTimer(label: string, folderPath?: number[]): Promise<Timer> {
@@ -292,16 +283,7 @@ export class TimeTrackerManager {
         if (!subtimer.endTime) {
           // Accumulate elapsed time before stopping
           const now = new Date();
-          const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-          const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-          
-          if (subtimer.totalElapsedTime === undefined) {
-            subtimer.totalElapsedTime = elapsedThisSegment;
-          } else {
-            subtimer.totalElapsedTime += elapsedThisSegment;
-          }
-          
-          subtimer.endTime = now.toISOString();
+          TimerHelpers.pauseSubtimer(subtimer, now);
           this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
           changed = true;
         }
@@ -317,45 +299,30 @@ export class TimeTrackerManager {
     const config = this.getConfigInternal();
     let changed = false;
     const pausedTimerIds = new Set<string>();
-    const pauseAllSubtimers = (folders: TimerFolder[]): void => {
-      for (const folder of folders) {
-        for (const timer of folder.timers) {
-          if (excludeTimerId && timer.id === excludeTimerId) {
-            continue;
+
+    TimerHelpers.forEachTimer(config.folders, (timer) => {
+      if (excludeTimerId && timer.id === excludeTimerId) {
+        return;
+      }
+      let timerChanged = false;
+      if (timer.subtimers) {
+        for (const subtimer of timer.subtimers) {
+          if (!subtimer.endTime) {
+            // Accumulate elapsed time before stopping
+            const now = new Date();
+            TimerHelpers.pauseSubtimer(subtimer, now);
+            this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
+            this.addLog(timer, `[${subtimer.label}] - Paused`);
+            timerChanged = true;
+            changed = true;
           }
-          let timerChanged = false;
-          if (timer.subtimers) {
-            for (const subtimer of timer.subtimers) {
-              if (!subtimer.endTime) {
-                // Accumulate elapsed time before stopping
-                const now = new Date();
-                const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-                const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-                
-                if (subtimer.totalElapsedTime === undefined) {
-                  subtimer.totalElapsedTime = elapsedThisSegment;
-                } else {
-                  subtimer.totalElapsedTime += elapsedThisSegment;
-                }
-                
-                subtimer.endTime = now.toISOString();
-                this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
-                this.addLog(timer, `[${subtimer.label}] - Paused`);
-                timerChanged = true;
-                changed = true;
-              }
-            }
-          }
-          if (timerChanged) {
-            pausedTimerIds.add(timer.id);
-          }
-        }
-        if (folder.subfolders) {
-          pauseAllSubtimers(folder.subfolders);
         }
       }
-    };
-    pauseAllSubtimers(config.folders);
+      if (timerChanged) {
+        pausedTimerIds.add(timer.id);
+      }
+    });
+
     for (const pausedId of pausedTimerIds) {
       this.activeTimers.delete(pausedId);
     }
@@ -365,18 +332,7 @@ export class TimeTrackerManager {
   }
 
   private findTimerInConfig(config: TimeTrackerConfig, timerId: string): Timer | undefined {
-    const searchInFolders = (folders: TimerFolder[]): Timer | undefined => {
-      for (const folder of folders) {
-        const timer = folder.timers.find(t => t.id === timerId);
-        if (timer) return timer;
-        if (folder.subfolders) {
-          const found = searchInFolders(folder.subfolders);
-          if (found) return found;
-        }
-      }
-      return undefined;
-    };
-    return searchInFolders(config.folders);
+    return TimerHelpers.findTimer(config.folders, timerId);
   }
 
   public async editTimer(timerId: string, updates: Partial<Timer>): Promise<void> {
@@ -448,16 +404,7 @@ export class TimeTrackerManager {
           if (!subtimer.endTime) {
             // Accumulate elapsed time before archiving
             const now = new Date();
-            const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-            const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-            
-            if (subtimer.totalElapsedTime === undefined) {
-              subtimer.totalElapsedTime = elapsedThisSegment;
-            } else {
-              subtimer.totalElapsedTime += elapsedThisSegment;
-            }
-            
-            subtimer.endTime = now.toISOString();
+            TimerHelpers.pauseSubtimer(subtimer, now);
             this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
             hasRunningSubtimer = true;
           }
@@ -612,16 +559,7 @@ export class TimeTrackerManager {
                 if (!subtimer.endTime) {
                   // Accumulate elapsed time before pausing
                   const now = new Date();
-                  const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-                  const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-                  
-                  if (subtimer.totalElapsedTime === undefined) {
-                    subtimer.totalElapsedTime = elapsedThisSegment;
-                  } else {
-                    subtimer.totalElapsedTime += elapsedThisSegment;
-                  }
-                  
-                  subtimer.endTime = now.toISOString();
+                  TimerHelpers.pauseSubtimer(subtimer, now);
                   this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
                   hadRunningSubtimer = true;
                 }
@@ -922,16 +860,7 @@ export class TimeTrackerManager {
                 if (!subtimer.endTime) {
                   // Accumulate elapsed time before pausing on shutdown
                   const pauseTimeDate = new Date(pauseTime);
-                  const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-                  const elapsedThisSegment = pauseTimeDate.getTime() - lastResumeTime.getTime();
-                  
-                  if (subtimer.totalElapsedTime === undefined) {
-                    subtimer.totalElapsedTime = elapsedThisSegment;
-                  } else {
-                    subtimer.totalElapsedTime += elapsedThisSegment;
-                  }
-                  
-                  subtimer.endTime = pauseTime;
+                  TimerHelpers.pauseSubtimer(subtimer, pauseTimeDate);
                   this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
                   autoPausedSubtimerIds.push({ timerId: timer.id, subtimerId: subtimer.id });
                   hadRunningSubtimer = true;
@@ -1137,21 +1066,7 @@ export class TimeTrackerManager {
 
   public getAllTimers(includeArchived: boolean = false): Timer[] {
     const config = this.getConfigInternal();
-    const timers: Timer[] = [];
-    const collectFromFolders = (folders: TimerFolder[]): void => {
-      for (const folder of folders) {
-        for (const timer of folder.timers) {
-          if (includeArchived || !timer.archived) {
-            timers.push(timer);
-          }
-        }
-        if (folder.subfolders) {
-          collectFromFolders(folder.subfolders);
-        }
-      }
-    };
-    collectFromFolders(config.folders);
-    return timers;
+    return TimerHelpers.getAllTimers(config.folders, includeArchived);
   }
 
   public async createSubTimer(timerId: string, label: string, description?: string, startImmediately: boolean = true): Promise<SubTimer> {
@@ -1216,20 +1131,11 @@ export class TimeTrackerManager {
     }
 
     // Pause any other running subtimers (but don't pause the parent timer)
+    const now = new Date();
     for (const subtimer of timer.subtimers) {
       if (subtimer.id !== subtimerId && !subtimer.endTime) {
         // Accumulate elapsed time before pausing
-        const now = new Date();
-        const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-        const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-        
-        if (subtimer.totalElapsedTime === undefined) {
-          subtimer.totalElapsedTime = elapsedThisSegment;
-        } else {
-          subtimer.totalElapsedTime += elapsedThisSegment;
-        }
-        
-        subtimer.endTime = now.toISOString();
+        TimerHelpers.pauseSubtimer(subtimer, now);
         this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
       }
     }
@@ -1278,23 +1184,9 @@ export class TimeTrackerManager {
     const subtimer = timer.subtimers.find(st => st.id === subtimerId);
     if (subtimer && !subtimer.endTime) {
       const now = new Date();
-      const lastResumeTime = subtimer.lastResumeTime ? new Date(subtimer.lastResumeTime) : new Date(subtimer.startTime);
-      
-      // Calculate elapsed time from last resume until now
-      const elapsedThisSegment = now.getTime() - lastResumeTime.getTime();
-      
-      // Initialize totalElapsedTime if not set (for backward compatibility)
-      if (subtimer.totalElapsedTime === undefined) {
-        subtimer.totalElapsedTime = elapsedThisSegment;
-      } else {
-        // Accumulate the elapsed time from this running segment
-        subtimer.totalElapsedTime += elapsedThisSegment;
-      }
-      
-      // Pause the subtimer
-      subtimer.endTime = now.toISOString();
+      TimerHelpers.pauseSubtimer(subtimer, now);
       this.syncLastPersistedElapsedTime(subtimer, subtimer.totalElapsedTime ?? 0);
-      
+
       // Log subtimer pause
       this.addLog(timer, `[${subtimer.label}] - Paused`);
       await this.saveConfig(config);
@@ -1442,5 +1334,14 @@ export class TimeTrackerManager {
       }
     }
     return false;
+  }
+
+  /**
+   * Dispose of resources and event emitters.
+   */
+  public dispose(): void {
+    this.configFileWatcher?.dispose();
+    this._onDidChange.dispose();
+    this._onTimerStateChange.dispose();
   }
 }

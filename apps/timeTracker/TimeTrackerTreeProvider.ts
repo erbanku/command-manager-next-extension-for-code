@@ -9,15 +9,17 @@ export class TimeTrackerTreeProvider implements vscode.TreeDataProvider<TimeTrac
   readonly onDidChangeTreeData: vscode.Event<TimeTrackerTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
   private manager: TimeTrackerManager;
+  private updateInterval?: NodeJS.Timeout;
 
   constructor() {
     this.manager = TimeTrackerManager.getInstance();
-    // Listen to config changes
-    const configManager = ConfigManager.getInstance();
-    configManager.setOnTimeTrackerChange(() => this.refresh());
 
-    // Periodically refresh to update running timer elapsed times
-    setInterval(() => {
+    // Subscribe to manager change events (replaces config manager callback)
+    this.manager.onDidChange(() => this.refresh());
+
+    // Keep interval for live elapsed time updates (but only for running timers)
+    // This is necessary because elapsed time changes every second even without state changes
+    this.updateInterval = setInterval(() => {
       this.refresh();
     }, 10000); // Update every 10 seconds
   }
@@ -225,5 +227,16 @@ export class TimeTrackerTreeProvider implements vscode.TreeDataProvider<TimeTrac
     });
 
     return items;
+  }
+
+  /**
+   * Dispose of resources.
+   */
+  public dispose(): void {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = undefined;
+    }
+    this._onDidChangeTreeData.dispose();
   }
 }

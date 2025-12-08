@@ -262,7 +262,17 @@ export async function activate(context: vscode.ExtensionContext) {
     webviewManager.setTimeTrackerTreeProvider(timeTrackerProvider);
 
     const statusBarManager = new StatusBarManager(context, treeProvider, configManager);
-    context.subscriptions.push(statusBarManager, documentationProvider, documentationTreeView, commandTreeView, testRunnerProvider, testRunnerTreeView, timeTrackerTreeView, codeLensProvider, codeLensRegistration);
+    context.subscriptions.push(
+        statusBarManager,
+        documentationProvider,
+        documentationTreeView,
+        commandTreeView,
+        testRunnerProvider,
+        testRunnerTreeView,
+        timeTrackerTreeView,
+        codeLensProvider,
+        codeLensRegistration
+    );
 
     // Editor decorations for test status
     const decorationTypes = {

@@ -38,7 +38,7 @@ export function getDefaultConfig(): CommandConfig {
           {
             id: 'build-environment',
             label: 'Build for environment',
-            command: 'npm run build -- --env $ENVIRONMENT_NAME',
+            command: 'npm run build -- --env $ENVIRONMENT_NAME $input:helptext="This is a helptext that will appear to the user when the input is asked"',
             terminal: {
               type: 'vscode-current'
             },
