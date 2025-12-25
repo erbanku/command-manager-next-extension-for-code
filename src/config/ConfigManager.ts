@@ -1,18 +1,25 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { CommandConfig, TimeTrackerConfig } from '../types';
 import { getDefaultConfig, validateConfig, getDefaultTimeTrackerConfig, validateTimeTrackerConfig } from './schema';
+
+type StorageLocation = 'workspace' | 'global' | 'both';
 
 export class ConfigManager {
   private static instance: ConfigManager | undefined;
   private config: CommandConfig;
   private configPath: string;
+  private globalConfigPath: string;
   private watcher?: vscode.FileSystemWatcher;
+  private globalWatcher?: vscode.FileSystemWatcher;
   private onConfigChangeCallbacks: Array<() => void> = [];
   private timeTrackerConfig: TimeTrackerConfig;
   private timeTrackerConfigPath: string;
+  private globalTimeTrackerConfigPath: string;
   private timeTrackerWatcher?: vscode.FileSystemWatcher;
+  private globalTimeTrackerWatcher?: vscode.FileSystemWatcher;
   private onTimeTrackerChangeCallbacks: Array<() => void> = [];
   private pendingMigratedTimeTracker?: TimeTrackerConfig;
   private legacyConfigPath: string;
@@ -27,6 +34,12 @@ export class ConfigManager {
     this.timeTrackerConfigPath = path.join(commandsDir, 'commands-timer.json');
     this.legacyConfigPath = path.join(baseDir, 'commands.json');
     this.legacyTimeTrackerPath = path.join(baseDir, 'commands-timer.json');
+    
+    // Global paths
+    const globalBaseDir = path.join(os.homedir(), '.vscode', 'commands');
+    this.globalConfigPath = path.join(globalBaseDir, 'commands.json');
+    this.globalTimeTrackerConfigPath = path.join(globalBaseDir, 'commands-timer.json');
+    
     this.config = getDefaultConfig();
     this.timeTrackerConfig = getDefaultTimeTrackerConfig();
   }
@@ -36,6 +49,26 @@ export class ConfigManager {
       ConfigManager.instance = new ConfigManager();
     }
     return ConfigManager.instance;
+  }
+
+  private getStorageLocation(): StorageLocation {
+    const config = vscode.workspace.getConfiguration('commandManager');
+    return config.get<StorageLocation>('storageLocation', 'workspace');
+  }
+
+  private shouldPreferGlobalCommands(): boolean {
+    const config = vscode.workspace.getConfiguration('commandManager');
+    return config.get<boolean>('preferGlobalCommands', false);
+  }
+
+  private shouldAutoCreateDirectory(): boolean {
+    const config = vscode.workspace.getConfiguration('commandManager');
+    return config.get<boolean>('autoCreateCommandsDirectory', true);
+  }
+
+  private shouldAddToGitignore(): boolean {
+    const config = vscode.workspace.getConfiguration('commandManager');
+    return config.get<boolean>('addCommandsToGitignore', false);
   }
 
   public async initialize(): Promise<void> {
@@ -65,63 +98,233 @@ export class ConfigManager {
     config.version = version;
     config.lastModified = new Date().toISOString();
 
-    await this.writeCommandsConfigToDisk(config);
+    const storageLocation = this.getStorageLocation();
+    
+    // Save to appropriate location(s)
+    if (storageLocation === 'workspace') {
+      await this.writeCommandsConfigToDisk(config);
+    } else if (storageLocation === 'global') {
+      await this.writeGlobalCommandsConfigToDisk(config);
+    } else if (storageLocation === 'both') {
+      // When in 'both' mode, save to workspace by default
+      // User can manually edit global config if needed
+      await this.writeCommandsConfigToDisk(config);
+    }
+    
     this.config = config;
     this.notifyConfigChange();
   }
 
   public async loadConfig(): Promise<void> {
     try {
-      await this.ensureCommandsDirectoryExists();
-      await this.migrateLegacyConfigIfNeeded();
-      if (fs.existsSync(this.configPath)) {
-        const configData = await fs.promises.readFile(this.configPath, 'utf8');
-        const parsedConfig = JSON.parse(configData);
+      const storageLocation = this.getStorageLocation();
+      const preferGlobal = this.shouldPreferGlobalCommands();
+      
+      let workspaceConfig: CommandConfig | undefined;
+      let globalConfig: CommandConfig | undefined;
 
-        let extractedTimeTracker: TimeTrackerConfig | undefined;
-        if (parsedConfig.timeTracker) {
-          extractedTimeTracker = parsedConfig.timeTracker;
-          delete parsedConfig.timeTracker;
-        }
-
-        const validation = validateConfig(parsedConfig);
+      // Load workspace config if needed
+      if (storageLocation === 'workspace' || storageLocation === 'both') {
+        await this.ensureCommandsDirectoryExists();
+        await this.migrateLegacyConfigIfNeeded();
         
-        if (validation.valid) {
-          // Success path: keep the parsed data and normalise optional arrays.
-          this.config = parsedConfig;
-          // Ensure testRunners array exists (empty array is valid - user can delete default config)
-          if (!this.config.testRunners) {
-            this.config.testRunners = [];
-          }
-          // Ensure pinnedCommands array exists
-          if (!this.config.pinnedCommands) {
-            this.config.pinnedCommands = [];
+        if (fs.existsSync(this.configPath)) {
+          const configData = await fs.promises.readFile(this.configPath, 'utf8');
+          const parsedConfig = JSON.parse(configData);
+
+          // Handle time tracker migration before validation
+          let extractedTimeTracker: TimeTrackerConfig | undefined;
+          if (parsedConfig.timeTracker) {
+            extractedTimeTracker = parsedConfig.timeTracker;
+            delete parsedConfig.timeTracker;
           }
 
-          if (extractedTimeTracker) {
-            // Stash migrated data so the time-tracker loader can persist it into the new file.
-            this.pendingMigratedTimeTracker = extractedTimeTracker;
-            await this.writeCommandsConfigToDisk(this.config);
+          const validation = validateConfig(parsedConfig);
+          
+          if (validation.valid) {
+            workspaceConfig = parsedConfig;
+            
+            if (extractedTimeTracker) {
+              this.pendingMigratedTimeTracker = extractedTimeTracker;
+            }
+          } else {
+            vscode.window.showWarningMessage(
+              `Invalid workspace configuration file: ${validation.errors.join(', ')}. Using default configuration.`
+            );
           }
+        }
+      }
+
+      // Load global config if needed
+      if (storageLocation === 'global' || storageLocation === 'both') {
+        // Ensure global directory exists without creating workspace directory
+        const globalDir = path.dirname(this.globalConfigPath);
+        if (!fs.existsSync(globalDir)) {
+          await fs.promises.mkdir(globalDir, { recursive: true });
+        }
+        
+        if (fs.existsSync(this.globalConfigPath)) {
+          try {
+            const configData = await fs.promises.readFile(this.globalConfigPath, 'utf8');
+            const parsedConfig = JSON.parse(configData);
+
+            const validation = validateConfig(parsedConfig);
+            
+            if (validation.valid) {
+              globalConfig = parsedConfig;
+            } else {
+              vscode.window.showWarningMessage(
+                `Invalid global configuration file: ${validation.errors.join(', ')}.`
+              );
+            }
+          } catch (error) {
+            // Global config might not exist yet - that's okay
+          }
+        }
+      }
+
+      // Ensure testRunners and pinnedCommands arrays exist
+      if (workspaceConfig) {
+        if (!workspaceConfig.testRunners) {
+          workspaceConfig.testRunners = [];
+        }
+        if (!workspaceConfig.pinnedCommands) {
+          workspaceConfig.pinnedCommands = [];
+        }
+      }
+      if (globalConfig) {
+        if (!globalConfig.testRunners) {
+          globalConfig.testRunners = [];
+        }
+        if (!globalConfig.pinnedCommands) {
+          globalConfig.pinnedCommands = [];
+        }
+      }
+
+      // Merge configs based on storage location and preferences
+      if (storageLocation === 'workspace') {
+        this.config = workspaceConfig || getDefaultConfig();
+        if (!workspaceConfig) {
+          await this.writeCommandsConfigToDisk(this.config);
+        }
+      } else if (storageLocation === 'global') {
+        this.config = globalConfig || getDefaultConfig();
+        if (!globalConfig) {
+          await this.writeGlobalCommandsConfigToDisk(this.config);
+        }
+      } else if (storageLocation === 'both') {
+        // Merge both configs
+        if (preferGlobal && globalConfig) {
+          // Global commands as base, workspace commands added
+          this.config = this.mergeConfigs(globalConfig, workspaceConfig);
+        } else if (workspaceConfig) {
+          // Workspace commands as base, global commands added
+          this.config = this.mergeConfigs(workspaceConfig, globalConfig);
+        } else if (globalConfig) {
+          this.config = globalConfig;
         } else {
-          // Validation failure: surface a warning and revert to a safe default config.
-          vscode.window.showWarningMessage(
-            `Invalid configuration file: ${validation.errors.join(', ')}. Using default configuration.`
-          );
           this.config = getDefaultConfig();
           await this.writeCommandsConfigToDisk(this.config);
         }
-      } else {
-        // Create default config file
-        this.config = getDefaultConfig();
-        await this.writeCommandsConfigToDisk(this.config);
+      }
+
+      // Ensure essential arrays exist
+      if (!this.config.testRunners) {
+        this.config.testRunners = [];
+      }
+      if (!this.config.pinnedCommands) {
+        this.config.pinnedCommands = [];
       }
     } catch (error) {
-      // Parse/IO errors: notify the user, reset to defaults, and rewrite the file so the next load succeeds.
       vscode.window.showErrorMessage(`Failed to load configuration: ${error}`);
       this.config = getDefaultConfig();
-      await this.writeCommandsConfigToDisk(this.config);
+      
+      // Save to appropriate location based on storage setting
+      const storageLocation = this.getStorageLocation();
+      try {
+        if (storageLocation === 'global') {
+          await this.writeGlobalCommandsConfigToDisk(this.config);
+        } else {
+          await this.writeCommandsConfigToDisk(this.config);
+        }
+      } catch (saveError) {
+        // If save fails, at least we have the default config in memory
+        console.error('Failed to save default config:', saveError);
+      }
     }
+  }
+
+  private mergeConfigs(baseConfig: CommandConfig, additionalConfig?: CommandConfig): CommandConfig {
+    if (!additionalConfig) {
+      return baseConfig;
+    }
+
+    // Create a deep copy of base config
+    const merged: CommandConfig = JSON.parse(JSON.stringify(baseConfig));
+
+    // Merge folders - add additional folders with distinct names
+    if (additionalConfig.folders && additionalConfig.folders.length > 0) {
+      const baseFolderNames = new Set(merged.folders.map(f => f.name));
+      for (const folder of additionalConfig.folders) {
+        if (!baseFolderNames.has(folder.name)) {
+          merged.folders.push(folder);
+        }
+      }
+    }
+
+    // Merge test runners - add additional test runners with distinct IDs
+    if (additionalConfig.testRunners && additionalConfig.testRunners.length > 0) {
+      if (!merged.testRunners) {
+        merged.testRunners = [];
+      }
+      const baseRunnerIds = new Set(merged.testRunners.map(r => r.id));
+      for (const runner of additionalConfig.testRunners) {
+        if (!baseRunnerIds.has(runner.id)) {
+          merged.testRunners.push(runner);
+        }
+      }
+    }
+
+    // Merge pinned commands
+    if (additionalConfig.pinnedCommands && additionalConfig.pinnedCommands.length > 0) {
+      if (!merged.pinnedCommands) {
+        merged.pinnedCommands = [];
+      }
+      const basePinnedIds = new Set(merged.pinnedCommands);
+      for (const pinnedId of additionalConfig.pinnedCommands) {
+        if (!basePinnedIds.has(pinnedId)) {
+          merged.pinnedCommands.push(pinnedId);
+        }
+      }
+    }
+
+    // Merge shared variables
+    if (additionalConfig.sharedVariables && additionalConfig.sharedVariables.length > 0) {
+      if (!merged.sharedVariables) {
+        merged.sharedVariables = [];
+      }
+      const baseVarKeys = new Set(merged.sharedVariables.map(v => v.key));
+      for (const variable of additionalConfig.sharedVariables) {
+        if (!baseVarKeys.has(variable.key)) {
+          merged.sharedVariables.push(variable);
+        }
+      }
+    }
+
+    // Merge shared lists
+    if (additionalConfig.sharedLists && additionalConfig.sharedLists.length > 0) {
+      if (!merged.sharedLists) {
+        merged.sharedLists = [];
+      }
+      const baseListKeys = new Set(merged.sharedLists.map(l => l.key));
+      for (const list of additionalConfig.sharedLists) {
+        if (!baseListKeys.has(list.key)) {
+          merged.sharedLists.push(list);
+        }
+      }
+    }
+
+    return merged;
   }
 
   private async loadTimeTrackerConfig(): Promise<void> {
@@ -242,24 +445,48 @@ export class ConfigManager {
   }
 
   private setupFileWatcher(): void {
-    this.watcher = vscode.workspace.createFileSystemWatcher(this.configPath);
-    this.watcher.onDidChange(async () => {
-      await this.loadConfig();
-      this.notifyConfigChange();
-    });
-    this.watcher.onDidCreate(async () => {
-      await this.loadConfig();
-      this.notifyConfigChange();
-    });
-    this.watcher.onDidDelete(async () => {
-      this.config = getDefaultConfig();
-      this.notifyConfigChange();
-    });
+    const storageLocation = this.getStorageLocation();
+    
+    // Watch workspace config
+    if (storageLocation === 'workspace' || storageLocation === 'both') {
+      this.watcher = vscode.workspace.createFileSystemWatcher(this.configPath);
+      this.watcher.onDidChange(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+      this.watcher.onDidCreate(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+      this.watcher.onDidDelete(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+    }
+    
+    // Watch global config
+    if (storageLocation === 'global' || storageLocation === 'both') {
+      this.globalWatcher = vscode.workspace.createFileSystemWatcher(this.globalConfigPath);
+      this.globalWatcher.onDidChange(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+      this.globalWatcher.onDidCreate(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+      this.globalWatcher.onDidDelete(async () => {
+        await this.loadConfig();
+        this.notifyConfigChange();
+      });
+    }
   }
 
   public dispose(): void {
     this.watcher?.dispose();
+    this.globalWatcher?.dispose();
     this.timeTrackerWatcher?.dispose();
+    this.globalTimeTrackerWatcher?.dispose();
   }
 
   public async openConfigFile(): Promise<void> {
@@ -423,9 +650,73 @@ export class ConfigManager {
   }
 
   private async ensureCommandsDirectoryExists(): Promise<void> {
-    const commandsDir = path.dirname(this.configPath);
-    if (!fs.existsSync(commandsDir)) {
-      await fs.promises.mkdir(commandsDir, { recursive: true });
+    const storageLocation = this.getStorageLocation();
+    const shouldAutoCreate = this.shouldAutoCreateDirectory();
+    
+    // Handle workspace directory
+    if (storageLocation === 'workspace' || storageLocation === 'both') {
+      const commandsDir = path.dirname(this.configPath);
+      if (!fs.existsSync(commandsDir) && shouldAutoCreate) {
+        await fs.promises.mkdir(commandsDir, { recursive: true });
+      }
+      
+      // Check if we should add to .gitignore after directory is created or if it already exists
+      if (fs.existsSync(commandsDir)) {
+        await this.addCommandsToGitignoreIfNeeded();
+      }
+    }
+    
+    // Handle global directory - always create if needed
+    if (storageLocation === 'global' || storageLocation === 'both') {
+      await this.ensureGlobalDirectoryExists();
+    }
+  }
+
+  private async ensureGlobalDirectoryExists(): Promise<void> {
+    const globalDir = path.dirname(this.globalConfigPath);
+    if (!fs.existsSync(globalDir)) {
+      await fs.promises.mkdir(globalDir, { recursive: true });
+    }
+  }
+
+  private async addCommandsToGitignoreIfNeeded(): Promise<void> {
+    if (!this.shouldAddToGitignore()) {
+      return;
+    }
+
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceRoot) {
+      return;
+    }
+
+    // Check if workspace is a git repository
+    const gitDir = path.join(workspaceRoot, '.git');
+    if (!fs.existsSync(gitDir)) {
+      return;
+    }
+
+    const gitignorePath = path.join(workspaceRoot, '.gitignore');
+    const commandsPattern = '.vscode/commands/';
+    
+    try {
+      let gitignoreContent = '';
+      if (fs.existsSync(gitignorePath)) {
+        gitignoreContent = await fs.promises.readFile(gitignorePath, 'utf8');
+      }
+
+      // Check if the pattern already exists
+      const lines = gitignoreContent.split('\n');
+      const patternExists = lines.some(line => line.trim() === commandsPattern.trim());
+
+      if (!patternExists) {
+        // Add the pattern
+        const newContent = gitignoreContent + (gitignoreContent && !gitignoreContent.endsWith('\n') ? '\n' : '') + commandsPattern + '\n';
+        
+        await fs.promises.writeFile(gitignorePath, newContent, 'utf8');
+      }
+    } catch (error) {
+      // Silently fail - don't interrupt the flow if gitignore update fails
+      console.error('Failed to update .gitignore:', error);
     }
   }
 
@@ -433,6 +724,12 @@ export class ConfigManager {
     await this.ensureCommandsDirectoryExists();
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.configPath, configJson, 'utf8');
+  }
+
+  private async writeGlobalCommandsConfigToDisk(config: CommandConfig): Promise<void> {
+    await this.ensureGlobalDirectoryExists();
+    const configJson = JSON.stringify(config, null, 2);
+    await fs.promises.writeFile(this.globalConfigPath, configJson, 'utf8');
   }
 
   private async migrateLegacyConfigIfNeeded(): Promise<void> {

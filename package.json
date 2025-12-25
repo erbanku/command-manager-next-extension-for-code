@@ -867,6 +867,31 @@
     "configuration": {
       "title": "Task and Documentation Hub",
       "properties": {
+        "commandManager.storageLocation": {
+          "type": "string",
+          "enum": [
+            "workspace",
+            "global",
+            "both"
+          ],
+          "default": "workspace",
+          "description": "Choose where to save commands: 'workspace' saves to .vscode/commands in the current workspace, 'global' saves to a global directory (~/.vscode/commands), 'both' uses both locations."
+        },
+        "commandManager.preferGlobalCommands": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, global commands from ~/.vscode/commands are loaded as default commands instead of the built-in samples. Only applies when storage location is set to 'both'."
+        },
+        "commandManager.autoCreateCommandsDirectory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically create the commands directory when opening a workspace. When disabled, the directory is only created when you explicitly create a command."
+        },
+        "commandManager.addCommandsToGitignore": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically add the commands directory to .gitignore if the workspace is a Git repository. Helps keep local commands private."
+        },
         "commandManager.documentationHub.viewMode": {
           "type": "string",
           "enum": [
