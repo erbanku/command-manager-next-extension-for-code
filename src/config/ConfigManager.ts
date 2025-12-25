@@ -644,23 +644,26 @@ export class ConfigManager {
     // Handle workspace directory
     if (storageLocation === 'workspace' || storageLocation === 'both') {
       const commandsDir = path.dirname(this.configPath);
-      if (!fs.existsSync(commandsDir)) {
-        if (shouldAutoCreate) {
-          await fs.promises.mkdir(commandsDir, { recursive: true });
-          await this.addCommandsToGitignoreIfNeeded();
-        }
-      } else {
-        // Directory exists, but check if we should add to .gitignore
+      if (!fs.existsSync(commandsDir) && shouldAutoCreate) {
+        await fs.promises.mkdir(commandsDir, { recursive: true });
+      }
+      
+      // Check if we should add to .gitignore after directory is created or if it already exists
+      if (fs.existsSync(commandsDir)) {
         await this.addCommandsToGitignoreIfNeeded();
       }
     }
     
-    // Handle global directory
+    // Handle global directory - always create if needed
     if (storageLocation === 'global' || storageLocation === 'both') {
-      const globalDir = path.dirname(this.globalConfigPath);
-      if (!fs.existsSync(globalDir)) {
-        await fs.promises.mkdir(globalDir, { recursive: true });
-      }
+      await this.ensureGlobalDirectoryExists();
+    }
+  }
+
+  private async ensureGlobalDirectoryExists(): Promise<void> {
+    const globalDir = path.dirname(this.globalConfigPath);
+    if (!fs.existsSync(globalDir)) {
+      await fs.promises.mkdir(globalDir, { recursive: true });
     }
   }
 
@@ -712,7 +715,7 @@ export class ConfigManager {
   }
 
   private async writeGlobalCommandsConfigToDisk(config: CommandConfig): Promise<void> {
-    await this.ensureCommandsDirectoryExists();
+    await this.ensureGlobalDirectoryExists();
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.globalConfigPath, configJson, 'utf8');
   }
