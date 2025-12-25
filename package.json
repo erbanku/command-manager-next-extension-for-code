@@ -2,7 +2,7 @@
   "name": "command-manager",
   "displayName": "Tasks, Tests & Doc Hub",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "publisher": "LeonardoSouza",
   "author": {
     "name": "Leonardo de Souza Chaves",
