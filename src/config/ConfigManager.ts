@@ -132,6 +132,7 @@ export class ConfigManager {
           const configData = await fs.promises.readFile(this.configPath, 'utf8');
           const parsedConfig = JSON.parse(configData);
 
+          // Handle time tracker migration before validation
           let extractedTimeTracker: TimeTrackerConfig | undefined;
           if (parsedConfig.timeTracker) {
             extractedTimeTracker = parsedConfig.timeTracker;
@@ -142,6 +143,10 @@ export class ConfigManager {
           
           if (validation.valid) {
             workspaceConfig = parsedConfig;
+            
+            if (extractedTimeTracker) {
+              this.pendingMigratedTimeTracker = extractedTimeTracker;
+            }
           } else {
             vscode.window.showWarningMessage(
               `Invalid workspace configuration file: ${validation.errors.join(', ')}. Using default configuration.`
@@ -152,7 +157,11 @@ export class ConfigManager {
 
       // Load global config if needed
       if (storageLocation === 'global' || storageLocation === 'both') {
-        await this.ensureCommandsDirectoryExists();
+        // Ensure global directory exists without creating workspace directory
+        const globalDir = path.dirname(this.globalConfigPath);
+        if (!fs.existsSync(globalDir)) {
+          await fs.promises.mkdir(globalDir, { recursive: true });
+        }
         
         if (fs.existsSync(this.globalConfigPath)) {
           try {
@@ -171,17 +180,6 @@ export class ConfigManager {
           } catch (error) {
             // Global config might not exist yet - that's okay
           }
-        }
-      }
-
-      // Handle extracted time tracker migration
-      if (workspaceConfig) {
-        const configData = await fs.promises.readFile(this.configPath, 'utf8');
-        const parsedConfig = JSON.parse(configData);
-        if (parsedConfig.timeTracker) {
-          this.pendingMigratedTimeTracker = parsedConfig.timeTracker;
-          delete parsedConfig.timeTracker;
-          workspaceConfig = parsedConfig;
         }
       }
 
@@ -212,7 +210,7 @@ export class ConfigManager {
       } else if (storageLocation === 'global') {
         this.config = globalConfig || getDefaultConfig();
         if (!globalConfig) {
-          await this.writeCommandsConfigToDisk(this.config);
+          await this.writeGlobalCommandsConfigToDisk(this.config);
         }
       } else if (storageLocation === 'both') {
         // Merge both configs
@@ -697,9 +695,7 @@ export class ConfigManager {
 
       if (!patternExists) {
         // Add the pattern
-        const newContent = gitignoreContent.endsWith('\n') || gitignoreContent === '' 
-          ? gitignoreContent + commandsPattern + '\n'
-          : gitignoreContent + '\n' + commandsPattern + '\n';
+        const newContent = gitignoreContent + (gitignoreContent && !gitignoreContent.endsWith('\n') ? '\n' : '') + commandsPattern + '\n';
         
         await fs.promises.writeFile(gitignorePath, newContent, 'utf8');
       }

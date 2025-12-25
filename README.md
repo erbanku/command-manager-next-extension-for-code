@@ -359,6 +359,47 @@ All test runner configurations are stored in `.vscode/commands.json`:
 
 ---
 
+## ⚙️ Configuration Settings
+
+### Command Storage Location
+
+Control where your commands are saved:
+
+```json
+{
+  "commandManager.storageLocation": "workspace", // or "global" or "both"
+  "commandManager.preferGlobalCommands": false,
+  "commandManager.autoCreateCommandsDirectory": true,
+  "commandManager.addCommandsToGitignore": false
+}
+```
+
+**Storage Location Options:**
+- `workspace` (default): Saves commands to `.vscode/commands/` in the current workspace
+- `global`: Saves commands to `~/.vscode/commands/` globally (shared across all projects)
+- `both`: Uses both workspace and global commands (merged view)
+
+**Prefer Global Commands:**
+When `storageLocation` is set to `both`, enabling this option makes global commands appear as defaults instead of built-in samples.
+
+**Auto-Create Commands Directory:**
+- When enabled (default): The commands directory is created automatically when opening a workspace
+- When disabled: The directory is only created when you explicitly create a command
+
+**Add Commands to .gitignore:**
+When enabled, automatically adds `.vscode/commands/` to your `.gitignore` file if the workspace is a Git repository. This helps keep local commands private and out of version control.
+
+### Documentation Hub
+
+```json
+{
+  "commandManager.documentationHub.viewMode": "tree", // or "flat"
+  "commandManager.documentationHub.position": "bottom" // or "top"
+}
+```
+
+---
+
 ## 📋 Usage Examples
 
 ### Command Variables
