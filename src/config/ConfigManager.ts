@@ -238,7 +238,19 @@ export class ConfigManager {
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to load configuration: ${error}`);
       this.config = getDefaultConfig();
-      await this.writeCommandsConfigToDisk(this.config);
+      
+      // Save to appropriate location based on storage setting
+      const storageLocation = this.getStorageLocation();
+      try {
+        if (storageLocation === 'global') {
+          await this.writeGlobalCommandsConfigToDisk(this.config);
+        } else {
+          await this.writeCommandsConfigToDisk(this.config);
+        }
+      } catch (saveError) {
+        // If save fails, at least we have the default config in memory
+        console.error('Failed to save default config:', saveError);
+      }
     }
   }
 
