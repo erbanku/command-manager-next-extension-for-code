@@ -1,3 +1,4 @@
 node_modules
 out
 command-manager-*.vsix
+.vscode/private-folder-alias.json

@@ -34,12 +34,12 @@ export class ConfigManager {
     this.timeTrackerConfigPath = path.join(commandsDir, 'commands-timer.json');
     this.legacyConfigPath = path.join(baseDir, 'commands.json');
     this.legacyTimeTrackerPath = path.join(baseDir, 'commands-timer.json');
-    
+
     // Global paths
     const globalBaseDir = path.join(os.homedir(), '.vscode', 'commands');
     this.globalConfigPath = path.join(globalBaseDir, 'commands.json');
     this.globalTimeTrackerConfigPath = path.join(globalBaseDir, 'commands-timer.json');
-    
+
     this.config = getDefaultConfig();
     this.timeTrackerConfig = getDefaultTimeTrackerConfig();
   }
@@ -99,7 +99,7 @@ export class ConfigManager {
     config.lastModified = new Date().toISOString();
 
     const storageLocation = this.getStorageLocation();
-    
+
     // Save to appropriate location(s)
     if (storageLocation === 'workspace') {
       await this.writeCommandsConfigToDisk(config);
@@ -110,7 +110,7 @@ export class ConfigManager {
       // User can manually edit global config if needed
       await this.writeCommandsConfigToDisk(config);
     }
-    
+
     this.config = config;
     this.notifyConfigChange();
   }
@@ -119,7 +119,7 @@ export class ConfigManager {
     try {
       const storageLocation = this.getStorageLocation();
       const preferGlobal = this.shouldPreferGlobalCommands();
-      
+
       let workspaceConfig: CommandConfig | undefined;
       let globalConfig: CommandConfig | undefined;
 
@@ -127,7 +127,7 @@ export class ConfigManager {
       if (storageLocation === 'workspace' || storageLocation === 'both') {
         await this.ensureCommandsDirectoryExists();
         await this.migrateLegacyConfigIfNeeded();
-        
+
         if (fs.existsSync(this.configPath)) {
           const configData = await fs.promises.readFile(this.configPath, 'utf8');
           const parsedConfig = JSON.parse(configData);
@@ -140,10 +140,10 @@ export class ConfigManager {
           }
 
           const validation = validateConfig(parsedConfig);
-          
+
           if (validation.valid) {
             workspaceConfig = parsedConfig;
-            
+
             if (extractedTimeTracker) {
               this.pendingMigratedTimeTracker = extractedTimeTracker;
             }
@@ -162,14 +162,14 @@ export class ConfigManager {
         if (!fs.existsSync(globalDir)) {
           await fs.promises.mkdir(globalDir, { recursive: true });
         }
-        
+
         if (fs.existsSync(this.globalConfigPath)) {
           try {
             const configData = await fs.promises.readFile(this.globalConfigPath, 'utf8');
             const parsedConfig = JSON.parse(configData);
 
             const validation = validateConfig(parsedConfig);
-            
+
             if (validation.valid) {
               globalConfig = parsedConfig;
             } else {
@@ -238,7 +238,7 @@ export class ConfigManager {
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to load configuration: ${error}`);
       this.config = getDefaultConfig();
-      
+
       // Save to appropriate location based on storage setting
       const storageLocation = this.getStorageLocation();
       try {
@@ -338,11 +338,11 @@ export class ConfigManager {
         return;
       }
 
-      await this.ensureCommandsDirectoryExists();
+      await this.ensureCommandsDirectoryExists(true);
       await this.migrateLegacyTimeTrackerIfNeeded();
 
       const fileExists = fs.existsSync(this.timeTrackerConfigPath);
-      
+
       if (!fileExists) {
         // Only create file if it doesn't exist at all - never recreate on failure
         this.timeTrackerConfig = getDefaultTimeTrackerConfig();
@@ -446,7 +446,7 @@ export class ConfigManager {
 
   private setupFileWatcher(): void {
     const storageLocation = this.getStorageLocation();
-    
+
     // Watch workspace config
     if (storageLocation === 'workspace' || storageLocation === 'both') {
       this.watcher = vscode.workspace.createFileSystemWatcher(this.configPath);
@@ -463,7 +463,7 @@ export class ConfigManager {
         this.notifyConfigChange();
       });
     }
-    
+
     // Watch global config
     if (storageLocation === 'global' || storageLocation === 'both') {
       this.globalWatcher = vscode.workspace.createFileSystemWatcher(this.globalConfigPath);
@@ -600,7 +600,13 @@ export class ConfigManager {
   }
 
   private async writeTimeTrackerConfigToDisk(config: TimeTrackerConfig, options?: { skipBackup?: boolean }): Promise<void> {
-    await this.ensureCommandsDirectoryExists();
+    await this.ensureCommandsDirectoryExists(true);
+
+    // Ensure the directory exists before writing
+    const timerDir = path.dirname(this.timeTrackerConfigPath);
+    if (!fs.existsSync(timerDir)) {
+      await fs.promises.mkdir(timerDir, { recursive: true });
+    }
 
     const jsonContent = JSON.stringify(config, null, 2);
     const tempPath = `${this.timeTrackerConfigPath}.tmp`;
@@ -641,7 +647,7 @@ export class ConfigManager {
       if (!fs.existsSync(this.timeTrackerConfigPath)) {
         return;
       }
-      await this.ensureCommandsDirectoryExists();
+      await this.ensureCommandsDirectoryExists(true);
       const backupPath = this.getTimeTrackerBackupPath();
       await fs.promises.copyFile(this.timeTrackerConfigPath, backupPath);
     } catch {
@@ -649,23 +655,23 @@ export class ConfigManager {
     }
   }
 
-  private async ensureCommandsDirectoryExists(): Promise<void> {
+  private async ensureCommandsDirectoryExists(force: boolean = false): Promise<void> {
     const storageLocation = this.getStorageLocation();
-    const shouldAutoCreate = this.shouldAutoCreateDirectory();
-    
+    const shouldAutoCreate = this.shouldAutoCreateDirectory() || force;
+
     // Handle workspace directory
     if (storageLocation === 'workspace' || storageLocation === 'both') {
       const commandsDir = path.dirname(this.configPath);
       if (!fs.existsSync(commandsDir) && shouldAutoCreate) {
         await fs.promises.mkdir(commandsDir, { recursive: true });
       }
-      
+
       // Check if we should add to .gitignore after directory is created or if it already exists
       if (fs.existsSync(commandsDir)) {
         await this.addCommandsToGitignoreIfNeeded();
       }
     }
-    
+
     // Handle global directory - always create if needed
     if (storageLocation === 'global' || storageLocation === 'both') {
       await this.ensureGlobalDirectoryExists();
@@ -697,7 +703,7 @@ export class ConfigManager {
 
     const gitignorePath = path.join(workspaceRoot, '.gitignore');
     const commandsPattern = '.vscode/commands/';
-    
+
     try {
       let gitignoreContent = '';
       if (fs.existsSync(gitignorePath)) {
@@ -711,7 +717,7 @@ export class ConfigManager {
       if (!patternExists) {
         // Add the pattern
         const newContent = gitignoreContent + (gitignoreContent && !gitignoreContent.endsWith('\n') ? '\n' : '') + commandsPattern + '\n';
-        
+
         await fs.promises.writeFile(gitignorePath, newContent, 'utf8');
       }
     } catch (error) {
@@ -722,12 +728,26 @@ export class ConfigManager {
 
   private async writeCommandsConfigToDisk(config: CommandConfig): Promise<void> {
     await this.ensureCommandsDirectoryExists();
+
+    // Ensure the directory exists before writing
+    const commandsDir = path.dirname(this.configPath);
+    if (!fs.existsSync(commandsDir)) {
+      await fs.promises.mkdir(commandsDir, { recursive: true });
+    }
+
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.configPath, configJson, 'utf8');
   }
 
   private async writeGlobalCommandsConfigToDisk(config: CommandConfig): Promise<void> {
     await this.ensureGlobalDirectoryExists();
+
+    // Ensure the directory exists before writing
+    const globalDir = path.dirname(this.globalConfigPath);
+    if (!fs.existsSync(globalDir)) {
+      await fs.promises.mkdir(globalDir, { recursive: true });
+    }
+
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.globalConfigPath, configJson, 'utf8');
   }
@@ -752,7 +772,7 @@ export class ConfigManager {
     }
 
     try {
-      await this.ensureCommandsDirectoryExists();
+      await this.ensureCommandsDirectoryExists(true);
       await fs.promises.copyFile(this.legacyTimeTrackerPath, this.timeTrackerConfigPath);
       await fs.promises.unlink(this.legacyTimeTrackerPath);
     } catch {
@@ -764,11 +784,11 @@ export class ConfigManager {
     const importData = await fs.promises.readFile(filePath, 'utf8');
     const parsedConfig = JSON.parse(importData);
     const validation = validateConfig(parsedConfig);
-    
+
     if (!validation.valid) {
       throw new Error(`Invalid configuration: ${validation.errors.join(', ')}`);
     }
-    
+
     await this.saveConfig(parsedConfig);
   }
 
