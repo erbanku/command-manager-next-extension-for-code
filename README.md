@@ -7,8 +7,6 @@
   <img src="resources/Tests.gif" height="400" width="400"/>
 </p>
 
----
-
 ## Features
 
 **📋 Tasks** - Create reusable commands with variables, organize in folders, pin to status bar
@@ -18,8 +16,6 @@
 **📚 Docs Hub** - Browse markdown files, search content, extract commands from code blocks
 
 **⏱️ Time Tracker** - Track sessions with pause/resume, Git branch automation, commit logging
-
----
 
 ## Installation
 
@@ -97,7 +93,5 @@ MIT License - see [LICENSE](./LICENSE)
 ## Credits
 
 Fork and Continue Development of [Leos-Shared-Commands](https://github.com/Leonardo8133/Leos-Shared-Commands) by **Leonardo de Souza Chaves** ([@Leonardo8133](https://github.com/Leonardo8133))
-
----
 
 [⬆ Back to Top](#commands-manager-next)
