@@ -142,7 +142,7 @@ export class StatusBarManager implements vscode.Disposable {
     item.text = `$(pin) ${command.label}`;
     item.tooltip = `Run ${command.label}`;
     item.command = {
-      command: 'commandManager.runCommandById',
+      command: 'commands-manager-next.tasks.runCommandById',
       title: 'Run Command',
       arguments: [command.id]
     };
@@ -195,7 +195,7 @@ export class StatusBarManager implements vscode.Disposable {
 
   private buildCommandUri(commandId: string): string {
     const args = encodeURIComponent(JSON.stringify({ commandId }));
-    return `command:commandManager.runCommandById?${args}`;
+    return `command:commands-manager-next.tasks.runCommandById?${args}`;
   }
 
   private escapeMarkdown(value: string): string {

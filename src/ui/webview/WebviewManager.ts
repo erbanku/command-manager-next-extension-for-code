@@ -400,7 +400,7 @@ export class WebviewManager {
             }));
             this.sendTestRunnerState(sanitized, true, testsForDisplay);
             vscode.window.showInformationMessage(`Found ${tests.length} test(s) for "${sanitized.title}".`);
-            setTimeout(() => { void vscode.commands.executeCommand('testRunner.refresh'); }, 5000);
+            setTimeout(() => { void vscode.commands.executeCommand('commands-manager-next.tests.refresh'); }, 5000);
           } catch (error) {
             const messageText = error instanceof Error ? error.message : String(error);
             vscode.window.showErrorMessage(`Failed to save and find tests: ${messageText}`);

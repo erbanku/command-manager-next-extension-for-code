@@ -11,7 +11,7 @@ export class TimeTrackerStatusBar implements vscode.Disposable {
   constructor(context: vscode.ExtensionContext) {
     this.timeTrackerManager = TimeTrackerManager.getInstance();
     this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
-    this.statusBarItem.command = 'timeTracker.focusView';
+    this.statusBarItem.command = 'commands-manager-next.time.focusView';
     context.subscriptions.push(this.statusBarItem);
 
     // Subscribe to manager change events

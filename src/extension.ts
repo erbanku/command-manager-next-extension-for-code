@@ -346,7 +346,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const applyPosition = () => {
-        const configuration = vscode.workspace.getConfiguration('commandManager.documentationHub');
+        const configuration = vscode.workspace.getConfiguration('commands-manager-next.documentationHub');
         const desiredPosition = configuration.get<DocumentationPosition>('position', 'bottom');
         void applyDocumentationViewPosition(desiredPosition);
     };
@@ -354,14 +354,14 @@ export async function activate(context: vscode.ExtensionContext) {
     applyPosition();
 
     const configurationListener = vscode.workspace.onDidChangeConfiguration(event => {
-        if (event.affectsConfiguration('commandManager.documentationHub.position')) {
+        if (event.affectsConfiguration('commands-manager-next.documentationHub.position')) {
             applyPosition();
         }
     });
     context.subscriptions.push(configurationListener);
 
     // Register commands
-    const runCommand = vscode.commands.registerCommand('commandManager.runCommand', async (item: CommandTreeItem) => {
+    const runCommand = vscode.commands.registerCommand('commands-manager-next.tasks.runCommand', async (item: CommandTreeItem) => {
         if (item && item.isCommand()) {
             const command = item.getCommand();
             if (command) {
@@ -374,7 +374,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const runCommandById = vscode.commands.registerCommand('commandManager.runCommandById', async (payload: string | { commandId: string }) => {
+    const runCommandById = vscode.commands.registerCommand('commands-manager-next.tasks.runCommandById', async (payload: string | { commandId: string }) => {
         const commandId = typeof payload === 'string' ? payload : payload?.commandId;
         if (!commandId) {
             return;
@@ -393,7 +393,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const pinToStatusBar = vscode.commands.registerCommand('commandManager.pinToStatusBar', async (item: CommandTreeItem) => {
+    const pinToStatusBar = vscode.commands.registerCommand('commands-manager-next.tasks.pinToStatusBar', async (item: CommandTreeItem) => {
         if (!item || !item.isCommand()) {
             return;
         }
@@ -406,7 +406,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await statusBarManager.togglePin(command);
     });
 
-    const moveItemUp = vscode.commands.registerCommand('commandManager.moveItemUp', async (item: CommandTreeItem) => {
+    const moveItemUp = vscode.commands.registerCommand('commands-manager-next.tasks.moveItemUp', async (item: CommandTreeItem) => {
         if (!item) {
             return;
         }
@@ -414,7 +414,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await treeProvider.moveItemByOffset(item, -1);
     });
 
-    const moveItemDown = vscode.commands.registerCommand('commandManager.moveItemDown', async (item: CommandTreeItem) => {
+    const moveItemDown = vscode.commands.registerCommand('commands-manager-next.tasks.moveItemDown', async (item: CommandTreeItem) => {
         if (!item) {
             return;
         }
@@ -422,7 +422,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await treeProvider.moveItemByOffset(item, 1);
     });
 
-    const moveItemToFolder = vscode.commands.registerCommand('commandManager.moveItemToFolder', async (item: CommandTreeItem) => {
+    const moveItemToFolder = vscode.commands.registerCommand('commands-manager-next.tasks.moveItemToFolder', async (item: CommandTreeItem) => {
         if (!item) {
             return;
         }
@@ -466,7 +466,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
 
-    const editCommand = vscode.commands.registerCommand('commandManager.editCommand', async (item: CommandTreeItem) => {
+    const editCommand = vscode.commands.registerCommand('commands-manager-next.tasks.editCommand', async (item: CommandTreeItem) => {
         if (item && item.isCommand()) {
             const command = item.getCommand();
             if (command) {
@@ -480,7 +480,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const newCommand = vscode.commands.registerCommand('commandManager.newCommand', async (item?: CommandTreeItem) => {
+    const newCommand = vscode.commands.registerCommand('commands-manager-next.tasks.newCommand', async (item?: CommandTreeItem) => {
         let contextInfo: { folderPath: number[] } | undefined;
         if (item) {
             if (item.isFolder()) {
@@ -492,7 +492,7 @@ export async function activate(context: vscode.ExtensionContext) {
         webviewManager.showCommandEditor(undefined, contextInfo);
     });
 
-    const newFolder = vscode.commands.registerCommand('commandManager.newFolder', async (item?: CommandTreeItem) => {
+    const newFolder = vscode.commands.registerCommand('commands-manager-next.tasks.newFolder', async (item?: CommandTreeItem) => {
         let contextInfo: { parentPath?: number[] } | undefined;
         if (item) {
             if (item.isFolder()) {
@@ -504,7 +504,7 @@ export async function activate(context: vscode.ExtensionContext) {
         webviewManager.showFolderEditor(undefined, contextInfo);
     });
 
-    const duplicateCommand = vscode.commands.registerCommand('commandManager.duplicateCommand', async (item: CommandTreeItem) => {
+    const duplicateCommand = vscode.commands.registerCommand('commands-manager-next.tasks.duplicateCommand', async (item: CommandTreeItem) => {
         if (item && item.isCommand()) {
             const command = item.getCommand();
             if (command) {
@@ -520,7 +520,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const convertWorkspaceTask = vscode.commands.registerCommand('commandManager.convertWorkspaceTask', async (item: CommandTreeItem) => {
+    const convertWorkspaceTask = vscode.commands.registerCommand('commands-manager-next.tasks.convertWorkspaceTask', async (item: CommandTreeItem) => {
         if (!item || !item.isCommand()) {
             return;
         }
@@ -592,7 +592,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const editFolder = vscode.commands.registerCommand('commandManager.editFolder', async (item: CommandTreeItem) => {
+    const editFolder = vscode.commands.registerCommand('commands-manager-next.tasks.editFolder', async (item: CommandTreeItem) => {
         if (item && item.isFolder()) {
             const folder = item.getFolder();
             if (folder) {
@@ -601,7 +601,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const quickRun = vscode.commands.registerCommand('commandManager.quickRun', async () => {
+    const quickRun = vscode.commands.registerCommand('commands-manager-next.tasks.quickRun', async () => {
         const commands = await treeProvider.getAllCommands();
         if (commands.length === 0) {
             vscode.window.showInformationMessage('No commands configured yet. Create one from the Commands Manager Next view.');
@@ -626,7 +626,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const deleteItem = vscode.commands.registerCommand('commandManager.deleteItem', async (item: CommandTreeItem) => {
+    const deleteItem = vscode.commands.registerCommand('commands-manager-next.tasks.deleteItem', async (item: CommandTreeItem) => {
         if (!item) return;
 
         if (item.isCommand()) {
@@ -674,22 +674,22 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const openConfig = vscode.commands.registerCommand('commandManager.openConfig', async () => {
+    const openConfig = vscode.commands.registerCommand('commands-manager-next.tasks.openConfig', async () => {
         await configManager.openConfigFile();
     });
 
-    const refresh = vscode.commands.registerCommand('commandManager.refresh', () => {
+    const refresh = vscode.commands.registerCommand('commands-manager-next.tasks.refresh', () => {
         treeProvider.refresh();
     });
 
 
     // Webview commands
-    const openConfiguration = vscode.commands.registerCommand('commandManager.openConfiguration', () => {
+    const openConfiguration = vscode.commands.registerCommand('commands-manager-next.tasks.openConfiguration', () => {
         webviewManager.showConfigurationManager();
     });
 
     // Import/Export commands
-    const importCommands = vscode.commands.registerCommand('commandManager.importCommands', async () => {
+    const importCommands = vscode.commands.registerCommand('commands-manager-next.tasks.importCommands', async () => {
         const fileUri = await vscode.window.showOpenDialog({
             canSelectFiles: true,
             canSelectMany: false,
@@ -709,7 +709,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const exportCommands = vscode.commands.registerCommand('commandManager.exportCommands', async () => {
+    const exportCommands = vscode.commands.registerCommand('commands-manager-next.tasks.exportCommands', async () => {
         const fileUri = await vscode.window.showSaveDialog({
             defaultUri: vscode.Uri.file('commands.json'),
             filters: {
@@ -807,31 +807,31 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const newTestRunnerConfiguration = vscode.commands.registerCommand(
-        'testRunner.newConfiguration',
+        'commands-manager-next.tests.newConfiguration',
         () => {
             webviewManager.showTestRunnerEditor();
         }
     );
 
     const openTestRunnerConfiguration = vscode.commands.registerCommand(
-        'testRunner.openConfiguration',
+        'commands-manager-next.tests.openConfiguration',
         (item?: TestRunnerTreeItem) => {
             const configId = item && item.isConfig() ? item.config.id : undefined;
             webviewManager.showTestRunnerEditor(configId);
         }
     );
 
-    const runAllTestsCommand = vscode.commands.registerCommand('testRunner.runAll', async () => {
+    const runAllTestsCommand = vscode.commands.registerCommand('commands-manager-next.tests.runAll', async () => {
         await testRunnerManager.runAll(undefined, testRunnerProvider);
     });
 
-    const stopAllTestsCommand = vscode.commands.registerCommand('testRunner.stopAll', () => {
+    const stopAllTestsCommand = vscode.commands.registerCommand('commands-manager-next.tests.stopAll', () => {
         testRunnerManager.cancelRunAll();
         vscode.window.showInformationMessage('Stopping all tests...');
     });
 
     const runConfigurationCommand = vscode.commands.registerCommand(
-        'testRunner.runConfiguration',
+        'commands-manager-next.tests.runConfiguration',
         async (item: TestRunnerTreeItem) => {
             if (!item || !item.isConfig()) {
                 return;
@@ -841,7 +841,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const runFolderCommand = vscode.commands.registerCommand(
-        'testRunner.runFolder',
+        'commands-manager-next.tests.runFolder',
         async (item: TestRunnerTreeItem) => {
             if (!item || item.itemType !== 'folder' || !item.folderPath) {
                 return;
@@ -880,7 +880,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const runFileCommand = vscode.commands.registerCommand(
-        'testRunner.runFile',
+        'commands-manager-next.tests.runFile',
         async (item: TestRunnerTreeItem) => {
             if (!item || item.itemType !== 'file' || !item.folderPath || !item.fileName) {
                 return;
@@ -920,7 +920,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const runTestCaseCommand = vscode.commands.registerCommand(
-        'testRunner.runTestCase',
+        'commands-manager-next.tests.runTestCase',
         async (item: TestRunnerTreeItem) => {
             if (!item || item.itemType !== 'testcase' || !item.folderPath || !item.fileName || !item.testCaseName) {
                 return;
@@ -959,7 +959,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    const moveTestRunnerUp = vscode.commands.registerCommand('testRunner.moveUp', async (item: TestRunnerTreeItem) => {
+    const moveTestRunnerUp = vscode.commands.registerCommand('commands-manager-next.tests.moveUp', async (item: TestRunnerTreeItem) => {
         if (!item || !item.isConfig()) {
             return;
         }
@@ -971,7 +971,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const moveTestRunnerDown = vscode.commands.registerCommand('testRunner.moveDown', async (item: TestRunnerTreeItem) => {
+    const moveTestRunnerDown = vscode.commands.registerCommand('commands-manager-next.tests.moveDown', async (item: TestRunnerTreeItem) => {
         if (!item || !item.isConfig()) {
             return;
         }
@@ -983,7 +983,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const moveTestRunnerTo = vscode.commands.registerCommand('testRunner.moveTo', async (item: TestRunnerTreeItem) => {
+    const moveTestRunnerTo = vscode.commands.registerCommand('commands-manager-next.tests.moveTo', async (item: TestRunnerTreeItem) => {
         if (!item || !item.isConfig()) {
             return;
         }
@@ -1006,7 +1006,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await testRunnerManager.moveConfig(item.config.id, selection.index);
     });
 
-    const hideTestRunnerConfiguration = vscode.commands.registerCommand('testRunner.disableConfiguration', async (item: TestRunnerTreeItem) => {
+    const hideTestRunnerConfiguration = vscode.commands.registerCommand('commands-manager-next.tests.disableConfiguration', async (item: TestRunnerTreeItem) => {
         if (!item || !item.isConfig()) {
             return;
         }
@@ -1015,7 +1015,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     const unhideTestRunnerConfiguration = vscode.commands.registerCommand(
-        'testRunner.enableConfiguration',
+        'commands-manager-next.tests.enableConfiguration',
         async (item: TestRunnerTreeItem) => {
             if (!item || !item.isConfig()) {
                 return;
@@ -1026,7 +1026,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const runSingleTestCommand = vscode.commands.registerCommand(
-        'testRunner.runTest',
+        'commands-manager-next.tests.runTest',
         async (arg1: TestRunnerTreeItem | TestRunnerConfig, arg2?: DiscoveredTest) => {
             let config: TestRunnerConfig | undefined;
             let test: DiscoveredTest | undefined;
@@ -1104,7 +1104,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const ignoreTestCommand = vscode.commands.registerCommand(
-        'testRunner.ignoreTest',
+        'commands-manager-next.tests.ignoreTest',
         async (arg1: TestRunnerTreeItem | TestRunnerConfig, arg2?: DiscoveredTest) => {
             let config: TestRunnerConfig | undefined;
             let test: DiscoveredTest | undefined;
@@ -1130,7 +1130,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     const gotoTestCommand = vscode.commands.registerCommand(
-        'testRunner.gotoTest',
+        'commands-manager-next.tests.gotoTest',
         async (arg1: TestRunnerTreeItem | TestRunnerConfig, arg2?: DiscoveredTest) => {
             let test: DiscoveredTest | undefined;
 
@@ -1155,7 +1155,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    const expandAllTestRunners = vscode.commands.registerCommand('testRunner.expandAll', async (item?: TestRunnerTreeItem) => {
+    const expandAllTestRunners = vscode.commands.registerCommand('commands-manager-next.tests.expandAll', async (item?: TestRunnerTreeItem) => {
         if (item) {
             // Expand specific item and all its children recursively (up to 3 levels)
             await testRunnerTreeView.reveal(item, { expand: 3, focus: false });
@@ -1173,7 +1173,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const collapseAllTestRunners = vscode.commands.registerCommand('testRunner.collapseAll', async (item?: TestRunnerTreeItem) => {
+    const collapseAllTestRunners = vscode.commands.registerCommand('commands-manager-next.tests.collapseAll', async (item?: TestRunnerTreeItem) => {
         if (item) {
             // Collapse specific item - refresh it to reset its state
             testRunnerProvider.refresh(item);
@@ -1189,7 +1189,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const refreshTestRunners = vscode.commands.registerCommand('testRunner.refresh', async () => {
+    const refreshTestRunners = vscode.commands.registerCommand('commands-manager-next.tests.refresh', async () => {
         // Clear all test statuses to reset icons
         testRunnerProvider.clearAllStatuses();
         // Discover tests only for configs with AutoFind ON
@@ -1200,7 +1200,7 @@ export async function activate(context: vscode.ExtensionContext) {
         testRunnerProvider.refresh();
     });
 
-    const findTestsForConfig = vscode.commands.registerCommand('testRunner.findTests', async (item: TestRunnerTreeItem) => {
+    const findTestsForConfig = vscode.commands.registerCommand('commands-manager-next.tests.findTests', async (item: TestRunnerTreeItem) => {
         if (!item || !item.isConfig()) {
             return;
         }
@@ -1208,10 +1208,10 @@ export async function activate(context: vscode.ExtensionContext) {
         // Discover tests and cache them in the tree provider
         const tests = await testRunnerManager.discoverAndCacheTests(item.config, testRunnerProvider);
         vscode.window.showInformationMessage(`Found ${tests.length} test(s) for "${item.config.title}". Please Refresh the Test Runner to see the tests in the tree view.`);
-        setTimeout(() => { void vscode.commands.executeCommand('testRunner.refresh'); }, 200);
+        setTimeout(() => { void vscode.commands.executeCommand('commands-manager-next.tests.refresh'); }, 200);
     });
 
-    const searchTests = vscode.commands.registerCommand('testRunner.search', async () => {
+    const searchTests = vscode.commands.registerCommand('commands-manager-next.tests.search', async () => {
         await testRunnerProvider.setSearchQuery();
     });
 
@@ -1240,58 +1240,58 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     // Documentation hub commands
-    const openDocumentation = vscode.commands.registerCommand('documentationHub.openFile', async (uri: vscode.Uri) => {
+    const openDocumentation = vscode.commands.registerCommand('commands-manager-next.docs.openFile', async (uri: vscode.Uri) => {
         await documentationProvider.openFile(uri);
     });
 
-    const copyDocumentationPath = vscode.commands.registerCommand('documentationHub.copyPath', async (uri: vscode.Uri) => {
+    const copyDocumentationPath = vscode.commands.registerCommand('commands-manager-next.docs.copyPath', async (uri: vscode.Uri) => {
         await documentationProvider.copyFilePath(uri);
     });
 
     const extractDocumentationCommands = vscode.commands.registerCommand(
-        'documentationHub.extractCommands',
+        'commands-manager-next.docs.extractCommands',
         async (uri: vscode.Uri) => {
             await documentationProvider.extractCommandsFromReadme(uri);
         }
     );
 
-    const searchDocumentation = vscode.commands.registerCommand('documentationHub.search', async () => {
+    const searchDocumentation = vscode.commands.registerCommand('commands-manager-next.docs.search', async () => {
         await documentationProvider.setSearchQuery();
     });
 
-    const toggleDocumentationViewMode = vscode.commands.registerCommand('documentationHub.toggleViewMode', () => {
+    const toggleDocumentationViewMode = vscode.commands.registerCommand('commands-manager-next.docs.toggleViewMode', () => {
         documentationProvider.toggleViewMode();
     });
 
-    const refreshDocumentation = vscode.commands.registerCommand('documentationHub.refresh', async () => {
+    const refreshDocumentation = vscode.commands.registerCommand('commands-manager-next.docs.refresh', async () => {
         await documentationProvider.reload();
     });
 
     const openDocumentationSection = vscode.commands.registerCommand(
-        'documentationHub.openSection',
+        'commands-manager-next.docs.openSection',
         async (target: { path: string; line: number }) => {
             await documentationProvider.openSection(target);
         }
     );
 
-    const hideDocumentationItem = vscode.commands.registerCommand('documentationHub.hideItem', async (item: any) => {
+    const hideDocumentationItem = vscode.commands.registerCommand('commands-manager-next.docs.hideItem', async (item: any) => {
         if (item && (item.type === 'folder' || item.type === 'file')) {
             documentationProvider.hideItem(item);
         }
     });
 
-    const unhideDocumentationItem = vscode.commands.registerCommand('documentationHub.unhideItem', async (item: any) => {
+    const unhideDocumentationItem = vscode.commands.registerCommand('commands-manager-next.docs.unhideItem', async (item: any) => {
         if (item && (item.type === 'folder' || item.type === 'file')) {
             documentationProvider.unhideItem(item);
         }
     });
 
-    const unhideAllDocumentation = vscode.commands.registerCommand('documentationHub.unhideAll', () => {
+    const unhideAllDocumentation = vscode.commands.registerCommand('commands-manager-next.docs.unhideAll', () => {
         documentationProvider.unhideAll();
     });
 
     // Time Tracker commands
-    const startTimerCommand = vscode.commands.registerCommand('timeTracker.startTimer', async (item?: TimeTrackerTreeItem) => {
+    const startTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.startTimer', async (item?: TimeTrackerTreeItem) => {
         const label = await vscode.window.showInputBox({
             prompt: 'Enter timer label',
             placeHolder: 'Timer name'
@@ -1305,7 +1305,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`Timer "${label}" started`);
     });
 
-    const stopTimerCommand = vscode.commands.registerCommand('timeTracker.stopTimer', async (item: TimeTrackerTreeItem) => {
+    const stopTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.stopTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1319,14 +1319,14 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`Timer "${timer.label}" stopped`);
     });
 
-    const stopAllTimersCommand = vscode.commands.registerCommand('timeTracker.stopAll', async () => {
+    const stopAllTimersCommand = vscode.commands.registerCommand('commands-manager-next.time.stopAll', async () => {
         await timeTrackerManager.stopAllTimers();
         timeTrackerProvider.refresh();
         timeTrackerStatusBar.update();
         vscode.window.showInformationMessage('All timers stopped');
     });
 
-    const editTimerCommand = vscode.commands.registerCommand('timeTracker.editTimer', async (item: TimeTrackerTreeItem) => {
+    const editTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.editTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1334,7 +1334,7 @@ export async function activate(context: vscode.ExtensionContext) {
         webviewManager.showTimerEditor(timer.id);
     });
 
-    const deleteTimerCommand = vscode.commands.registerCommand('timeTracker.deleteTimer', async (item: TimeTrackerTreeItem) => {
+    const deleteTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.deleteTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1351,7 +1351,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('Timer deleted');
     });
 
-    const archiveTimerCommand = vscode.commands.registerCommand('timeTracker.archiveTimer', async (item: TimeTrackerTreeItem) => {
+    const archiveTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.archiveTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1362,7 +1362,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(wasArchived ? 'Timer unarchived' : 'Timer archived');
     });
 
-    const newFolderCommand = vscode.commands.registerCommand('timeTracker.newFolder', async (item?: TimeTrackerTreeItem) => {
+    const newFolderCommand = vscode.commands.registerCommand('commands-manager-next.time.newFolder', async (item?: TimeTrackerTreeItem) => {
         const name = await vscode.window.showInputBox({
             prompt: 'Enter folder name',
             placeHolder: 'Folder name'
@@ -1374,7 +1374,7 @@ export async function activate(context: vscode.ExtensionContext) {
         timeTrackerProvider.refresh();
     });
 
-    const moveTimerToFolderCommand = vscode.commands.registerCommand('timeTracker.moveToFolder', async (timerItem: TimeTrackerTreeItem, folderItem?: TimeTrackerTreeItem) => {
+    const moveTimerToFolderCommand = vscode.commands.registerCommand('commands-manager-next.time.moveToFolder', async (timerItem: TimeTrackerTreeItem, folderItem?: TimeTrackerTreeItem) => {
         if (!timerItem || !timerItem.isTimer()) return;
         const timer = timerItem.getTimer();
         if (!timer) return;
@@ -1421,7 +1421,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const resumeTimerCommand = vscode.commands.registerCommand('timeTracker.resumeTimer', async (item: TimeTrackerTreeItem) => {
+    const resumeTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.resumeTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1436,7 +1436,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`Timer "${timer.label}" resumed`);
     });
 
-    const moveTimerUpCommand = vscode.commands.registerCommand('timeTracker.moveTimerUp', async (item: TimeTrackerTreeItem) => {
+    const moveTimerUpCommand = vscode.commands.registerCommand('commands-manager-next.time.moveTimerUp', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1445,7 +1445,7 @@ export async function activate(context: vscode.ExtensionContext) {
         timeTrackerProvider.refresh();
     });
 
-    const moveTimerDownCommand = vscode.commands.registerCommand('timeTracker.moveTimerDown', async (item: TimeTrackerTreeItem) => {
+    const moveTimerDownCommand = vscode.commands.registerCommand('commands-manager-next.time.moveTimerDown', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1454,7 +1454,7 @@ export async function activate(context: vscode.ExtensionContext) {
         timeTrackerProvider.refresh();
     });
 
-    const createSubTimerCommand = vscode.commands.registerCommand('timeTracker.createSubTimer', async (item: TimeTrackerTreeItem) => {
+    const createSubTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.createSubTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isTimer()) return;
         const timer = item.getTimer();
         if (!timer) return;
@@ -1480,7 +1480,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const startSubTimerCommand = vscode.commands.registerCommand('timeTracker.startSubTimer', async (item: TimeTrackerTreeItem) => {
+    const startSubTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.startSubTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isSubTimer()) return;
         const subtimer = item.getSubTimer();
         if (!subtimer) return;
@@ -1494,7 +1494,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`SubTimer "${subtimer.label}" started`);
     });
 
-    const stopSubTimerCommand = vscode.commands.registerCommand('timeTracker.stopSubTimer', async (item: TimeTrackerTreeItem) => {
+    const stopSubTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.stopSubTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isSubTimer()) return;
         const subtimer = item.getSubTimer();
         if (!subtimer || subtimer.endTime) return;
@@ -1508,7 +1508,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`SubTimer "${subtimer.label}" stopped`);
     });
 
-    const editSubTimerCommand = vscode.commands.registerCommand('timeTracker.editSubTimer', async (item: TimeTrackerTreeItem) => {
+    const editSubTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.editSubTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isSubTimer()) return;
         const subtimer = item.getSubTimer();
         if (!subtimer) return;
@@ -1541,7 +1541,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const deleteSubTimerCommand = vscode.commands.registerCommand('timeTracker.deleteSubTimer', async (item: TimeTrackerTreeItem) => {
+    const deleteSubTimerCommand = vscode.commands.registerCommand('commands-manager-next.time.deleteSubTimer', async (item: TimeTrackerTreeItem) => {
         if (!item || !item.isSubTimer()) return;
         const subtimer = item.getSubTimer();
         if (!subtimer) return;
@@ -1561,12 +1561,12 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('SubTimer deleted');
     });
 
-    const refreshTimeTrackerCommand = vscode.commands.registerCommand('timeTracker.refresh', () => {
+    const refreshTimeTrackerCommand = vscode.commands.registerCommand('commands-manager-next.time.refresh', () => {
         timeTrackerProvider.refresh();
         timeTrackerStatusBar.update();
     });
 
-    const toggleEnabledCommand = vscode.commands.registerCommand('timeTracker.toggleEnabled', async () => {
+    const toggleEnabledCommand = vscode.commands.registerCommand('commands-manager-next.time.toggleEnabled', async () => {
         const isEnabled = timeTrackerManager.isEnabled();
         await timeTrackerManager.setEnabled(!isEnabled);
         timeTrackerProvider.refresh();
@@ -1574,14 +1574,14 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`Time tracking ${!isEnabled ? 'enabled' : 'disabled'}`);
     });
 
-    const toggleBranchAutomationCommand = vscode.commands.registerCommand('timeTracker.toggleBranchAutomation', async () => {
+    const toggleBranchAutomationCommand = vscode.commands.registerCommand('commands-manager-next.time.toggleBranchAutomation', async () => {
         const isEnabled = timeTrackerManager.isAutoCreateOnBranchCheckoutEnabled();
         await timeTrackerManager.setAutoCreateOnBranchCheckout(!isEnabled);
         timeTrackerProvider.refresh();
         vscode.window.showInformationMessage(`Branch automation ${!isEnabled ? 'enabled' : 'disabled'}`);
     });
 
-    const focusViewCommand = vscode.commands.registerCommand('timeTracker.focusView', () => {
+    const focusViewCommand = vscode.commands.registerCommand('commands-manager-next.time.focusView', () => {
         timeTrackerTreeView.reveal(timeTrackerTreeView.selection[0] || null, { focus: true, select: false });
     });
 

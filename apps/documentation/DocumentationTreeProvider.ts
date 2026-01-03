@@ -1,4 +1,4 @@
-import * as path from 'path';
+﻿import * as path from 'path';
 import * as vscode from 'vscode';
 import { ConfigManager } from '../../src/config/ConfigManager';
 import { Command } from '../../src/types';
@@ -35,7 +35,7 @@ export class DocumentationTreeProvider implements vscode.TreeDataProvider<Docume
     this.setupFileWatcher();
 
     vscode.workspace.onDidChangeConfiguration(event => {
-      if (event.affectsConfiguration('commandManager.documentationHub.viewMode')) {
+      if (event.affectsConfiguration('commands-manager-next.documentationHub.viewMode')) {
         this.viewMode = this.getConfiguredViewMode();
         this.refresh();
       }
@@ -45,7 +45,7 @@ export class DocumentationTreeProvider implements vscode.TreeDataProvider<Docume
   }
 
   private getConfiguredViewMode(): ViewMode {
-    const configuration = vscode.workspace.getConfiguration('commandManager.documentationHub');
+    const configuration = vscode.workspace.getConfiguration('commands-manager-next.documentationHub');
     const value = configuration.get<'tree' | 'flat'>('viewMode', 'tree');
     return value;
   }
@@ -302,7 +302,7 @@ export class DocumentationTreeProvider implements vscode.TreeDataProvider<Docume
 
   public toggleViewMode(): void {
     this.viewMode = this.viewMode === 'tree' ? 'flat' : 'tree';
-    const configuration = vscode.workspace.getConfiguration('commandManager.documentationHub');
+    const configuration = vscode.workspace.getConfiguration('commands-manager-next.documentationHub');
     void configuration.update('viewMode', this.viewMode, vscode.ConfigurationTarget.Workspace);
     this.refresh();
   }

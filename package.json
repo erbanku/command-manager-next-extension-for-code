@@ -1,13 +1,9 @@
 {
-  "name": "command-manager",
-  "displayName": "Tasks, Tests & Doc Hub",
+  "name": "commands-manager-next",
+  "displayName": "Commands Manager Next",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "1.4.7",
-  "publisher": "LeonardoSouza",
-  "author": {
-    "name": "Leonardo de Souza Chaves",
-    "email": "leonardo2sc@gmail.com"
-  },
+  "version": "2.0.0",
+  "publisher": "erbanku",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -88,786 +84,745 @@
     },
     "commands": [
       {
-        "command": "commandManager.runCommand",
-        "title": "Run Command",
+        "command": "commands-manager-next.tasks.runCommand",
+        "title": "CMN Run Command",
         "icon": "$(play)"
       },
       {
-        "command": "commandManager.runCommandById",
-        "title": "Run Saved Command"
+        "command": "commands-manager-next.tasks.runCommandById",
+        "title": "CMN Run Saved Command"
       },
       {
-        "command": "commandManager.editCommand",
-        "title": "Edit Command",
+        "command": "commands-manager-next.tasks.editCommand",
+        "title": "CMN Edit Command",
         "icon": "$(edit)"
       },
       {
-        "command": "commandManager.newCommand",
-        "title": "New Command",
+        "command": "commands-manager-next.tasks.newCommand",
+        "title": "CMN New Command",
         "icon": "$(add)"
       },
       {
-        "command": "commandManager.newFolder",
-        "title": "New Folder",
+        "command": "commands-manager-next.tasks.newFolder",
+        "title": "CMN New Folder",
         "icon": "$(new-folder)"
       },
       {
-        "command": "commandManager.editFolder",
-        "title": "Edit Folder",
+        "command": "commands-manager-next.tasks.editFolder",
+        "title": "CMN Edit Folder",
         "icon": "$(gear)"
       },
       {
-        "command": "commandManager.duplicateCommand",
-        "title": "Duplicate Command"
+        "command": "commands-manager-next.tasks.duplicateCommand",
+        "title": "CMN Duplicate Command"
       },
       {
-        "command": "commandManager.pinToStatusBar",
-        "title": "Pin Command in Status Bar"
+        "command": "commands-manager-next.tasks.pinToStatusBar",
+        "title": "CMN Pin Command in Status Bar"
       },
       {
-        "command": "commandManager.convertWorkspaceTask",
-        "title": "Convert to Editable Task",
+        "command": "commands-manager-next.tasks.convertWorkspaceTask",
+        "title": "CMN Convert to Editable Task",
         "icon": "$(edit)"
       },
       {
-        "command": "commandManager.moveItemUp",
-        "title": "Move Up",
+        "command": "commands-manager-next.tasks.moveItemUp",
+        "title": "CMN Move Up",
         "icon": "$(arrow-up)"
       },
       {
-        "command": "commandManager.moveItemDown",
-        "title": "Move Down",
+        "command": "commands-manager-next.tasks.moveItemDown",
+        "title": "CMN Move Down",
         "icon": "$(arrow-down)"
       },
       {
-        "command": "commandManager.moveItemToFolder",
-        "title": "Move to Folder",
+        "command": "commands-manager-next.tasks.moveItemToFolder",
+        "title": "CMN Move to Folder",
         "icon": "$(folder-move)"
       },
       {
-        "command": "commandManager.deleteItem",
-        "title": "Delete",
+        "command": "commands-manager-next.tasks.deleteItem",
+        "title": "CMN Delete",
         "icon": "$(trash)"
       },
       {
-        "command": "commandManager.openConfig",
-        "title": "Open Configuration File"
+        "command": "commands-manager-next.tasks.openConfig",
+        "title": "CMN Open Configuration File"
       },
       {
-        "command": "commandManager.refresh",
-        "title": "Refresh",
+        "command": "commands-manager-next.tasks.refresh",
+        "title": "CMN Refresh",
         "icon": "$(refresh)"
       },
       {
-        "command": "commandManager.openConfiguration",
-        "title": "Task and Documentation Hub: Configuration",
+        "command": "commands-manager-next.tasks.openConfiguration",
+        "title": "CMN Task and Documentation Hub: Configuration",
         "icon": "$(gear)"
       },
       {
-        "command": "commandManager.quickRun",
-        "title": "Run Saved Command",
+        "command": "commands-manager-next.tasks.quickRun",
+        "title": "CMN Run Saved Command",
         "icon": "$(rocket)"
       },
       {
-        "command": "documentationHub.openFile",
-        "title": "Documentation Hub: Open File"
+        "command": "commands-manager-next.docs.openFile",
+        "title": "CMN Documentation Hub: Open File"
       },
       {
-        "command": "documentationHub.copyPath",
-        "title": "Documentation Hub: Copy Path"
+        "command": "commands-manager-next.docs.copyPath",
+        "title": "CMN Documentation Hub: Copy Path"
       },
       {
-        "command": "documentationHub.extractCommands",
-        "title": "Documentation Hub: Extract Tasks"
+        "command": "commands-manager-next.docs.extractCommands",
+        "title": "CMN Documentation Hub: Extract Tasks"
       },
       {
-        "command": "documentationHub.search",
-        "title": "Documentation Hub: Search",
+        "command": "commands-manager-next.docs.search",
+        "title": "CMN Documentation Hub: Search",
         "icon": "$(search)"
       },
       {
-        "command": "documentationHub.toggleViewMode",
-        "title": "Documentation Hub: Toggle View Mode",
+        "command": "commands-manager-next.docs.toggleViewMode",
+        "title": "CMN Documentation Hub: Toggle View Mode",
         "icon": "$(list-tree)"
       },
       {
-        "command": "documentationHub.refresh",
-        "title": "Documentation Hub: Refresh",
+        "command": "commands-manager-next.docs.refresh",
+        "title": "CMN Documentation Hub: Refresh",
         "icon": "$(refresh)"
       },
       {
-        "command": "documentationHub.openSection",
-        "title": "Documentation Hub: Open Section"
+        "command": "commands-manager-next.docs.openSection",
+        "title": "CMN Documentation Hub: Open Section"
       },
       {
-        "command": "documentationHub.hideItem",
-        "title": "Documentation Hub: Hide Item"
+        "command": "commands-manager-next.docs.hideItem",
+        "title": "CMN Documentation Hub: Hide Item"
       },
       {
-        "command": "documentationHub.unhideItem",
-        "title": "Documentation Hub: Unhide Item"
+        "command": "commands-manager-next.docs.unhideItem",
+        "title": "CMN Documentation Hub: Unhide Item"
       },
       {
-        "command": "documentationHub.unhideAll",
-        "title": "Documentation Hub: Unhide All",
+        "command": "commands-manager-next.docs.unhideAll",
+        "title": "CMN Documentation Hub: Unhide All",
         "icon": "$(eye)"
       },
       {
-        "command": "testRunner.newConfiguration",
-        "title": "Test Runner: New Configuration",
-        "icon": "$(add)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.newConfiguration",
+        "title": "CMN Test Runner: New Configuration",
+        "icon": "$(add)"
       },
       {
-        "command": "testRunner.openConfiguration",
-        "title": "Test Runner: Open Configuration",
-        "icon": "$(gear)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.openConfiguration",
+        "title": "CMN Test Runner: Open Configuration",
+        "icon": "$(gear)"
       },
       {
-        "command": "testRunner.runAll",
-        "title": "Test Runner: Run All",
-        "icon": "$(run-all)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runAll",
+        "title": "CMN Test Runner: Run All",
+        "icon": "$(run-all)"
       },
       {
-        "command": "testRunner.stopAll",
-        "title": "Test Runner: Stop All",
-        "icon": "$(debug-stop)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.stopAll",
+        "title": "CMN Test Runner: Stop All",
+        "icon": "$(debug-stop)"
       },
       {
-        "command": "testRunner.runConfiguration",
-        "title": "Test Runner: Run Configuration",
-        "icon": "$(play-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runConfiguration",
+        "title": "CMN Test Runner: Run Configuration",
+        "icon": "$(play-circle)"
       },
       {
-        "command": "testRunner.runFolder",
-        "title": "Test Runner: Run All Tests in Folder",
-        "icon": "$(play-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runFolder",
+        "title": "CMN Test Runner: Run All Tests in Folder",
+        "icon": "$(play-circle)"
       },
       {
-        "command": "testRunner.runFile",
-        "title": "Test Runner: Run All Tests in File",
-        "icon": "$(play-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runFile",
+        "title": "CMN Test Runner: Run All Tests in File",
+        "icon": "$(play-circle)"
       },
       {
-        "command": "testRunner.runTestCase",
-        "title": "Test Runner: Run All Tests in Test Case",
-        "icon": "$(play-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runTestCase",
+        "title": "CMN Test Runner: Run All Tests in Test Case",
+        "icon": "$(play-circle)"
       },
       {
-        "command": "testRunner.expandAll",
-        "title": "Test Runner: Expand All",
-        "icon": "$(expand-all)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.expandAll",
+        "title": "CMN Test Runner: Expand All",
+        "icon": "$(expand-all)"
       },
       {
-        "command": "testRunner.collapseAll",
-        "title": "Test Runner: Collapse All",
-        "icon": "$(collapse-all)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.collapseAll",
+        "title": "CMN Test Runner: Collapse All",
+        "icon": "$(collapse-all)"
       },
       {
-        "command": "testRunner.refresh",
-        "title": "Test Runner: Refresh",
-        "icon": "$(refresh)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.refresh",
+        "title": "CMN Test Runner: Refresh",
+        "icon": "$(refresh)"
       },
       {
-        "command": "testRunner.search",
-        "title": "Test Runner: Search",
-        "icon": "$(search)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.search",
+        "title": "CMN Test Runner: Search",
+        "icon": "$(search)"
       },
       {
-        "command": "testRunner.findTests",
-        "title": "Find Tests",
-        "icon": "$(search)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.findTests",
+        "title": "CMN Find Tests",
+        "icon": "$(search)"
       },
       {
-        "command": "testRunner.moveUp",
-        "title": "Test Runner: Move Up",
-        "icon": "$(arrow-up)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.moveUp",
+        "title": "CMN Test Runner: Move Up",
+        "icon": "$(arrow-up)"
       },
       {
-        "command": "testRunner.moveDown",
-        "title": "Test Runner: Move Down",
-        "icon": "$(arrow-down)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.moveDown",
+        "title": "CMN Test Runner: Move Down",
+        "icon": "$(arrow-down)"
       },
       {
-        "command": "testRunner.moveTo",
-        "title": "Test Runner: Move To",
-        "icon": "$(list-selection)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.moveTo",
+        "title": "CMN Test Runner: Move To",
+        "icon": "$(list-selection)"
       },
       {
-        "command": "testRunner.disableConfiguration",
-        "title": "Test Runner: Disable Configuration",
-        "icon": "$(eye-closed)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.disableConfiguration",
+        "title": "CMN Test Runner: Disable Configuration",
+        "icon": "$(eye-closed)"
       },
       {
-        "command": "testRunner.enableConfiguration",
-        "title": "Test Runner: Enable Configuration",
-        "icon": "$(eye)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.enableConfiguration",
+        "title": "CMN Test Runner: Enable Configuration",
+        "icon": "$(eye)"
       },
       {
-        "command": "testRunner.runTest",
-        "title": "Test Runner: Run Test",
-        "icon": "$(play-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.runTest",
+        "title": "CMN Test Runner: Run Test",
+        "icon": "$(play-circle)"
       },
       {
-        "command": "testRunner.ignoreTest",
-        "title": "Test Runner: Ignore Test",
-        "icon": "$(circle-slash)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.ignoreTest",
+        "title": "CMN Test Runner: Ignore Test",
+        "icon": "$(circle-slash)"
       },
       {
-        "command": "testRunner.gotoTest",
-        "title": "Test Runner: Open Test",
-        "icon": "$(go-to-file)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.tests.gotoTest",
+        "title": "CMN Test Runner: Open Test",
+        "icon": "$(go-to-file)"
       },
       {
-        "command": "timeTracker.startTimer",
-        "title": "Time Tracker: Start Timer",
-        "icon": "$(play)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.startTimer",
+        "title": "CMN Time Tracker: Start Timer",
+        "icon": "$(play)"
       },
       {
-        "command": "timeTracker.stopTimer",
-        "title": "Time Tracker: Stop Timer",
-        "icon": "$(debug-stop)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.stopTimer",
+        "title": "CMN Time Tracker: Stop Timer",
+        "icon": "$(debug-stop)"
       },
       {
-        "command": "timeTracker.resumeTimer",
-        "title": "Time Tracker: Resume Timer",
-        "icon": "$(play)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.resumeTimer",
+        "title": "CMN Time Tracker: Resume Timer",
+        "icon": "$(play)"
       },
       {
-        "command": "timeTracker.stopAll",
-        "title": "Time Tracker: Stop All Timers",
-        "icon": "$(stop-circle)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.stopAll",
+        "title": "CMN Time Tracker: Stop All Timers",
+        "icon": "$(stop-circle)"
       },
       {
-        "command": "timeTracker.editTimer",
-        "title": "Time Tracker: Edit Timer",
-        "icon": "$(edit)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.editTimer",
+        "title": "CMN Time Tracker: Edit Timer",
+        "icon": "$(edit)"
       },
       {
-        "command": "timeTracker.deleteTimer",
-        "title": "Time Tracker: Delete Timer",
-        "icon": "$(trash)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.deleteTimer",
+        "title": "CMN Time Tracker: Delete Timer",
+        "icon": "$(trash)"
       },
       {
-        "command": "timeTracker.archiveTimer",
-        "title": "Time Tracker: Archive Timer",
-        "icon": "$(archive)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.archiveTimer",
+        "title": "CMN Time Tracker: Archive Timer",
+        "icon": "$(archive)"
       },
       {
-        "command": "timeTracker.newFolder",
-        "title": "Time Tracker: New Folder",
-        "icon": "$(new-folder)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.newFolder",
+        "title": "CMN Time Tracker: New Folder",
+        "icon": "$(new-folder)"
       },
       {
-        "command": "timeTracker.moveToFolder",
-        "title": "Time Tracker: Move to Folder",
-        "icon": "$(file-directory)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.moveToFolder",
+        "title": "CMN Time Tracker: Move to Folder",
+        "icon": "$(file-directory)"
       },
       {
-        "command": "timeTracker.moveTimerUp",
-        "title": "Time Tracker: Move Timer Up",
-        "icon": "$(arrow-up)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.moveTimerUp",
+        "title": "CMN Time Tracker: Move Timer Up",
+        "icon": "$(arrow-up)"
       },
       {
-        "command": "timeTracker.moveTimerDown",
-        "title": "Time Tracker: Move Timer Down",
-        "icon": "$(arrow-down)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.moveTimerDown",
+        "title": "CMN Time Tracker: Move Timer Down",
+        "icon": "$(arrow-down)"
       },
       {
-        "command": "timeTracker.refresh",
-        "title": "Time Tracker: Refresh",
-        "icon": "$(refresh)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.refresh",
+        "title": "CMN Time Tracker: Refresh",
+        "icon": "$(refresh)"
       },
       {
-        "command": "timeTracker.toggleEnabled",
-        "title": "Time Tracker: Enable/Disable",
-        "icon": "$(circle-slash)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.toggleEnabled",
+        "title": "CMN Time Tracker: Enable/Disable",
+        "icon": "$(circle-slash)"
       },
       {
-        "command": "timeTracker.toggleBranchAutomation",
-        "title": "Time Tracker: Toggle Branch Automation",
-        "icon": "$(git-branch)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.toggleBranchAutomation",
+        "title": "CMN Time Tracker: Toggle Branch Automation",
+        "icon": "$(git-branch)"
       },
       {
-        "command": "timeTracker.focusView",
-        "title": "Time Tracker: Focus View",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.focusView",
+        "title": "CMN Time Tracker: Focus View"
       },
       {
-        "command": "timeTracker.createSubTimer",
-        "title": "Time Tracker: Create SubTimer",
-        "icon": "$(add)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.createSubTimer",
+        "title": "CMN Time Tracker: Create SubTimer",
+        "icon": "$(add)"
       },
       {
-        "command": "timeTracker.startSubTimer",
-        "title": "Time Tracker: Resume SubTimer",
-        "icon": "$(play)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.startSubTimer",
+        "title": "CMN Time Tracker: Resume SubTimer",
+        "icon": "$(play)"
       },
       {
-        "command": "timeTracker.stopSubTimer",
-        "title": "Time Tracker: Stop SubTimer",
-        "icon": "$(debug-stop)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.stopSubTimer",
+        "title": "CMN Time Tracker: Stop SubTimer",
+        "icon": "$(debug-stop)"
       },
       {
-        "command": "timeTracker.editSubTimer",
-        "title": "Time Tracker: Rename SubTimer",
-        "icon": "$(edit)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.editSubTimer",
+        "title": "CMN Time Tracker: Rename SubTimer",
+        "icon": "$(edit)"
       },
       {
-        "command": "timeTracker.deleteSubTimer",
-        "title": "Time Tracker: Delete SubTimer",
-        "icon": "$(trash)",
-        "category": "Task and Documentation Hub"
+        "command": "commands-manager-next.time.deleteSubTimer",
+        "title": "CMN Time Tracker: Delete SubTimer",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "commandManager.newCommand",
+          "command": "commands-manager-next.tasks.newCommand",
           "when": "view == commandManagerTree",
           "group": "navigation@1"
         },
         {
-          "command": "commandManager.newFolder",
+          "command": "commands-manager-next.tasks.newFolder",
           "when": "view == commandManagerTree",
           "group": "navigation@2"
         },
         {
-          "command": "commandManager.refresh",
+          "command": "commands-manager-next.tasks.refresh",
           "when": "view == commandManagerTree",
           "group": "navigation@3"
         },
         {
-          "command": "commandManager.openConfiguration",
+          "command": "commands-manager-next.tasks.openConfiguration",
           "when": "view == commandManagerTree",
           "group": "navigation@4"
         },
         {
-          "command": "documentationHub.search",
+          "command": "commands-manager-next.docs.search",
           "when": "view == documentationHubTree",
           "group": "navigation@1"
         },
         {
-          "command": "documentationHub.toggleViewMode",
+          "command": "commands-manager-next.docs.toggleViewMode",
           "when": "view == documentationHubTree",
           "group": "navigation@2"
         },
         {
-          "command": "documentationHub.refresh",
+          "command": "commands-manager-next.docs.refresh",
           "when": "view == documentationHubTree",
           "group": "navigation@3"
         },
         {
-          "command": "documentationHub.unhideAll",
+          "command": "commands-manager-next.docs.unhideAll",
           "when": "view == documentationHubTree",
           "group": "navigation@4"
         },
         {
-          "command": "testRunner.newConfiguration",
+          "command": "commands-manager-next.tests.newConfiguration",
           "when": "view == testRunnerTree",
           "group": "navigation@1"
         },
         {
-          "command": "testRunner.runAll",
+          "command": "commands-manager-next.tests.runAll",
           "when": "view == testRunnerTree",
           "group": "navigation@2"
         },
         {
-          "command": "testRunner.openConfiguration",
+          "command": "commands-manager-next.tests.openConfiguration",
           "when": "view == testRunnerTree",
           "group": "navigation@3"
         },
         {
-          "command": "testRunner.expandAll",
+          "command": "commands-manager-next.tests.expandAll",
           "when": "view == testRunnerTree",
           "group": "navigation@4"
         },
         {
-          "command": "testRunner.search",
+          "command": "commands-manager-next.tests.search",
           "when": "view == testRunnerTree",
           "group": "navigation@5"
         },
         {
-          "command": "testRunner.refresh",
+          "command": "commands-manager-next.tests.refresh",
           "when": "view == testRunnerTree",
           "group": "navigation@6"
         },
         {
-          "command": "timeTracker.startTimer",
+          "command": "commands-manager-next.time.startTimer",
           "when": "view == timeTrackerTree",
           "group": "navigation@1"
         },
         {
-          "command": "timeTracker.stopAll",
+          "command": "commands-manager-next.time.stopAll",
           "when": "view == timeTrackerTree",
           "group": "navigation@2"
         },
         {
-          "command": "timeTracker.newFolder",
+          "command": "commands-manager-next.time.newFolder",
           "when": "view == timeTrackerTree",
           "group": "navigation@3"
         },
         {
-          "command": "timeTracker.refresh",
+          "command": "commands-manager-next.time.refresh",
           "when": "view == timeTrackerTree",
           "group": "navigation@4"
         },
         {
-          "command": "timeTracker.toggleEnabled",
+          "command": "commands-manager-next.time.toggleEnabled",
           "when": "view == timeTrackerTree",
           "group": "navigation@5"
         }
       ],
       "view/item/context": [
         {
-          "command": "commandManager.runCommand",
+          "command": "commands-manager-next.tasks.runCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "inline@1"
         },
         {
-          "command": "commandManager.runCommand",
+          "command": "commands-manager-next.tasks.runCommand",
           "when": "view == commandManagerTree && viewItem == command.imported",
           "group": "inline@1"
         },
         {
-          "command": "commandManager.editCommand",
+          "command": "commands-manager-next.tasks.editCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "inline@2"
         },
         {
-          "command": "commandManager.runCommand",
+          "command": "commands-manager-next.tasks.runCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "1_actions@1"
         },
         {
-          "command": "commandManager.runCommand",
+          "command": "commands-manager-next.tasks.runCommand",
           "when": "view == commandManagerTree && viewItem == command.imported",
           "group": "1_actions@1"
         },
         {
-          "command": "commandManager.editCommand",
+          "command": "commands-manager-next.tasks.editCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "1_actions@2"
         },
         {
-          "command": "commandManager.pinToStatusBar",
+          "command": "commands-manager-next.tasks.pinToStatusBar",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "1_actions@3"
         },
         {
-          "command": "commandManager.pinToStatusBar",
+          "command": "commands-manager-next.tasks.pinToStatusBar",
           "when": "view == commandManagerTree && viewItem == command.imported",
           "group": "1_actions@3"
         },
         {
-          "command": "commandManager.convertWorkspaceTask",
+          "command": "commands-manager-next.tasks.convertWorkspaceTask",
           "when": "view == commandManagerTree && viewItem == command.imported",
           "group": "2_modify@1"
         },
         {
-          "command": "commandManager.duplicateCommand",
+          "command": "commands-manager-next.tasks.duplicateCommand",
           "when": "view == commandManagerTree && viewItem == command",
           "group": "2_modify@1"
         },
         {
-          "command": "commandManager.moveItemUp",
+          "command": "commands-manager-next.tasks.moveItemUp",
           "when": "view == commandManagerTree && (viewItem == command || viewItem == folder)",
           "group": "2_modify@2"
         },
         {
-          "command": "commandManager.moveItemDown",
+          "command": "commands-manager-next.tasks.moveItemDown",
           "when": "view == commandManagerTree && (viewItem == command || viewItem == folder)",
           "group": "2_modify@3"
         },
         {
-          "command": "commandManager.moveItemToFolder",
+          "command": "commands-manager-next.tasks.moveItemToFolder",
           "when": "view == commandManagerTree && (viewItem == command || viewItem == folder)",
           "group": "2_modify@4"
         },
         {
-          "command": "commandManager.deleteItem",
+          "command": "commands-manager-next.tasks.deleteItem",
           "when": "view == commandManagerTree && (viewItem == command || viewItem == folder)",
           "group": "2_modify@5"
         },
         {
-          "command": "commandManager.newCommand",
+          "command": "commands-manager-next.tasks.newCommand",
           "when": "view == commandManagerTree && viewItem == folder",
           "group": "3_new@1"
         },
         {
-          "command": "commandManager.newFolder",
+          "command": "commands-manager-next.tasks.newFolder",
           "when": "view == commandManagerTree && viewItem == folder",
           "group": "3_new@2"
         },
         {
-          "command": "commandManager.editFolder",
+          "command": "commands-manager-next.tasks.editFolder",
           "when": "view == commandManagerTree && viewItem == folder",
           "group": "2_modify@1"
         },
         {
-          "command": "documentationHub.openFile",
+          "command": "commands-manager-next.docs.openFile",
           "when": "view == documentationHubTree && (viewItem == documentationFile || viewItem == documentationReadme)",
           "group": "navigation@1"
         },
         {
-          "command": "documentationHub.copyPath",
+          "command": "commands-manager-next.docs.copyPath",
           "when": "view == documentationHubTree && (viewItem == documentationFile || viewItem == documentationReadme)",
           "group": "navigation@2"
         },
         {
-          "command": "documentationHub.extractCommands",
+          "command": "commands-manager-next.docs.extractCommands",
           "when": "view == documentationHubTree && viewItem == documentationReadme",
           "group": "navigation@3"
         },
         {
-          "command": "documentationHub.hideItem",
+          "command": "commands-manager-next.docs.hideItem",
           "when": "view == documentationHubTree && (viewItem == documentationFolder || viewItem == documentationReadme)",
           "group": "4_hide@1"
         },
         {
-          "command": "documentationHub.unhideItem",
+          "command": "commands-manager-next.docs.unhideItem",
           "when": "view == documentationHubTree && (viewItem == documentationFolder || viewItem == documentationReadme)",
           "group": "4_hide@2"
         },
         {
-          "command": "testRunner.openConfiguration",
+          "command": "commands-manager-next.tests.openConfiguration",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "navigation@1"
         },
         {
-          "command": "testRunner.runConfiguration",
+          "command": "commands-manager-next.tests.runConfiguration",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "inline@1"
         },
         {
-          "command": "testRunner.stopAll",
+          "command": "commands-manager-next.tests.stopAll",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "inline@2"
         },
         {
-          "command": "testRunner.moveUp",
+          "command": "commands-manager-next.tests.moveUp",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "2_modify@1"
         },
         {
-          "command": "testRunner.moveDown",
+          "command": "commands-manager-next.tests.moveDown",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "2_modify@2"
         },
         {
-          "command": "testRunner.moveTo",
+          "command": "commands-manager-next.tests.moveTo",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "2_modify@3"
         },
         {
-          "command": "testRunner.disableConfiguration",
+          "command": "commands-manager-next.tests.disableConfiguration",
           "when": "view == testRunnerTree && viewItem == testRunnerConfigActive",
           "group": "3_visibility@1"
         },
         {
-          "command": "testRunner.enableConfiguration",
+          "command": "commands-manager-next.tests.enableConfiguration",
           "when": "view == testRunnerTree && viewItem == testRunnerConfigInactive",
           "group": "3_visibility@1"
         },
         {
-          "command": "testRunner.findTests",
+          "command": "commands-manager-next.tests.findTests",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive)",
           "group": "2_modify@4"
         },
         {
-          "command": "testRunner.expandAll",
+          "command": "commands-manager-next.tests.expandAll",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive || viewItem == testRunnerFolder)",
           "group": "2_modify@5"
         },
         {
-          "command": "testRunner.collapseAll",
+          "command": "commands-manager-next.tests.collapseAll",
           "when": "view == testRunnerTree && (viewItem == testRunnerConfigActive || viewItem == testRunnerConfigInactive || viewItem == testRunnerFolder)",
           "group": "2_modify@6"
         },
         {
-          "command": "testRunner.runTest",
+          "command": "commands-manager-next.tests.runTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTest",
           "group": "inline@1"
         },
         {
-          "command": "testRunner.runTest",
+          "command": "commands-manager-next.tests.runTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTestWithButton",
           "group": "inline@1"
         },
         {
-          "command": "testRunner.ignoreTest",
+          "command": "commands-manager-next.tests.ignoreTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTest",
           "group": "inline@2"
         },
         {
-          "command": "testRunner.ignoreTest",
+          "command": "commands-manager-next.tests.ignoreTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTestWithButton",
           "group": "inline@2"
         },
         {
-          "command": "testRunner.gotoTest",
+          "command": "commands-manager-next.tests.gotoTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTest",
           "group": "inline@3"
         },
         {
-          "command": "testRunner.gotoTest",
+          "command": "commands-manager-next.tests.gotoTest",
           "when": "view == testRunnerTree && viewItem == testRunnerTestWithButton",
           "group": "inline@3"
         },
         {
-          "command": "testRunner.runFolder",
+          "command": "commands-manager-next.tests.runFolder",
           "when": "view == testRunnerTree && viewItem == testRunnerFolder",
           "group": "inline@1"
         },
         {
-          "command": "testRunner.runFile",
+          "command": "commands-manager-next.tests.runFile",
           "when": "view == testRunnerTree && viewItem == testRunnerFile",
           "group": "inline@1"
         },
         {
-          "command": "testRunner.runTestCase",
+          "command": "commands-manager-next.tests.runTestCase",
           "when": "view == testRunnerTree && viewItem == testRunnerTestCase",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.stopTimer",
+          "command": "commands-manager-next.time.stopTimer",
           "when": "view == timeTrackerTree && viewItem == timerRunning",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.editTimer",
+          "command": "commands-manager-next.time.editTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "inline@2"
         },
         {
-          "command": "timeTracker.archiveTimer",
+          "command": "commands-manager-next.time.archiveTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "inline@3"
         },
         {
-          "command": "timeTracker.toggleBranchAutomation",
+          "command": "commands-manager-next.time.toggleBranchAutomation",
           "when": "view == timeTrackerTree && viewItem == timerGitBranchesFolder",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.startTimer",
+          "command": "commands-manager-next.time.startTimer",
           "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.startTimer",
+          "command": "commands-manager-next.time.startTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped) && viewItem != 'timerRunning timerHasSubtimers' && viewItem != 'timerStopped timerHasSubtimers' && viewItem != 'timerRunning timerArchived timerHasSubtimers' && viewItem != 'timerStopped timerArchived timerHasSubtimers'",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.resumeTimer",
+          "command": "commands-manager-next.time.resumeTimer",
           "when": "view == timeTrackerTree && (viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.createSubTimer",
+          "command": "commands-manager-next.time.createSubTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "inline@4"
         },
         {
-          "command": "timeTracker.archiveTimer",
+          "command": "commands-manager-next.time.archiveTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
           "group": "1_actions@3"
         },
         {
-          "command": "timeTracker.deleteTimer",
+          "command": "commands-manager-next.time.deleteTimer",
           "when": "view == timeTrackerTree && (viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived')",
           "group": "1_actions@4"
         },
         {
-          "command": "timeTracker.moveTimerUp",
+          "command": "commands-manager-next.time.moveTimerUp",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "2_modify@1"
         },
         {
-          "command": "timeTracker.moveTimerDown",
+          "command": "commands-manager-next.time.moveTimerDown",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "2_modify@2"
         },
         {
-          "command": "timeTracker.moveToFolder",
+          "command": "commands-manager-next.time.moveToFolder",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "2_modify@3"
         },
         {
-          "command": "timeTracker.createSubTimer",
+          "command": "commands-manager-next.time.createSubTimer",
           "when": "view == timeTrackerTree && (viewItem == timerRunning || viewItem == timerStopped || viewItem == 'timerRunning timerHasSubtimers' || viewItem == 'timerStopped timerHasSubtimers' || viewItem == 'timerRunning timerArchived' || viewItem == 'timerStopped timerArchived' || viewItem == 'timerRunning timerArchived timerHasSubtimers' || viewItem == 'timerStopped timerArchived timerHasSubtimers')",
           "group": "3_new@1"
         },
         {
-          "command": "timeTracker.stopSubTimer",
+          "command": "commands-manager-next.time.stopSubTimer",
           "when": "view == timeTrackerTree && viewItem == subtimerRunning",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.editSubTimer",
+          "command": "commands-manager-next.time.editSubTimer",
           "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
           "group": "inline@2"
         },
         {
-          "command": "timeTracker.startSubTimer",
+          "command": "commands-manager-next.time.startSubTimer",
           "when": "view == timeTrackerTree && viewItem == subtimerStopped",
           "group": "inline@1"
         },
         {
-          "command": "timeTracker.deleteSubTimer",
+          "command": "commands-manager-next.time.deleteSubTimer",
           "when": "view == timeTrackerTree && (viewItem == subtimerRunning || viewItem == subtimerStopped)",
           "group": "1_actions@2"
         },
         {
-          "command": "timeTracker.newFolder",
+          "command": "commands-manager-next.time.newFolder",
           "when": "view == timeTrackerTree && viewItem == timerFolder && viewItem != timerArchiveFolder && viewItem != timerGitBranchesFolder",
           "group": "3_new@2"
         }
       ]
     },
     "configuration": {
-      "title": "Task and Documentation Hub",
+      "title": "Commands Mnager Next",
       "properties": {
-        "commandManager.storageLocation": {
+        "commands-manager-next.tasks.storageLocation": {
           "type": "string",
           "enum": [
             "workspace",
@@ -877,22 +832,22 @@
           "default": "workspace",
           "description": "Choose where to save commands: 'workspace' saves to .vscode/commands in the current workspace, 'global' saves to a global directory (~/.vscode/commands), 'both' uses both locations."
         },
-        "commandManager.preferGlobalCommands": {
+        "commands-manager-next.tasks.preferGlobalCommands": {
           "type": "boolean",
           "default": false,
           "description": "When enabled, global commands from ~/.vscode/commands are loaded as default commands instead of the built-in samples. Only applies when storage location is set to 'both'."
         },
-        "commandManager.autoCreateCommandsDirectory": {
+        "commands-manager-next.tasks.autoCreateCommandsDirectory": {
           "type": "boolean",
           "default": true,
           "description": "Automatically create the commands directory when opening a workspace. When disabled, the directory is only created when you explicitly create a command."
         },
-        "commandManager.addCommandsToGitignore": {
+        "commands-manager-next.tasks.addCommandsToGitignore": {
           "type": "boolean",
           "default": false,
           "description": "Automatically add the commands directory to .gitignore if the workspace is a Git repository. Helps keep local commands private."
         },
-        "commandManager.documentationHub.viewMode": {
+        "commands-manager-next.tasks.documentationHub.viewMode": {
           "type": "string",
           "enum": [
             "tree",
@@ -901,7 +856,7 @@
           "default": "tree",
           "description": "Choose whether the documentation hub displays markdown files in a folder tree or a flat list."
         },
-        "commandManager.documentationHub.position": {
+        "commands-manager-next.tasks.documentationHub.position": {
           "type": "string",
           "enum": [
             "top",
@@ -935,21 +890,21 @@
     "@playwright/test": "^1.56.1",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^20.0.0",
+    "@types/node": "^25.0.3",
     "@types/vscode": "^1.85.0",
     "@vscode/test-electron": "^2.3.0",
     "@wdio/cli": "^9.20.0",
     "@wdio/local-runner": "^9.20.0",
     "@wdio/mocha-framework": "^9.20.0",
     "@wdio/spec-reporter": "^9.20.0",
-    "chokidar": "^3.6.0",
-    "concurrently": "^8.2.2",
-    "glob": "^10.3.0",
-    "mocha": "^10.0.0",
+    "chokidar": "^5.0.0",
+    "concurrently": "^9.2.1",
+    "glob": "^13.0.0",
+    "mocha": "^11.7.5",
     "playwright": "^1.56.1",
     "typescript": "^5.3.0",
-    "vscode-extension-tester": "^6.0.0",
+    "vscode-extension-tester": "^8.19.0",
     "wdio-vscode-service": "^6.1.4",
-    "webdriverio": "^8.46.0"
+    "webdriverio": "^9.22.0"
   }
 }
