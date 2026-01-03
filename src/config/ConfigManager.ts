@@ -52,32 +52,170 @@ export class ConfigManager {
   }
 
   private getStorageLocation(): StorageLocation {
-    const config = vscode.workspace.getConfiguration('commandManager');
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
     return config.get<StorageLocation>('storageLocation', 'workspace');
   }
 
   private shouldPreferGlobalCommands(): boolean {
-    const config = vscode.workspace.getConfiguration('commandManager');
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
     return config.get<boolean>('preferGlobalCommands', false);
   }
 
   private shouldAutoCreateDirectory(): boolean {
-    const config = vscode.workspace.getConfiguration('commandManager');
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
     return config.get<boolean>('autoCreateCommandsDirectory', true);
   }
 
   private shouldAddToGitignore(): boolean {
-    const config = vscode.workspace.getConfiguration('commandManager');
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
     return config.get<boolean>('addCommandsToGitignore', false);
   }
 
+  private shouldCopyWorkspaceToGlobal(): boolean {
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
+    return config.get<boolean>('copyWorkspaceToGlobal', false);
+  }
+
+  private shouldCopyGlobalToWorkspace(): boolean {
+    const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
+    return config.get<boolean>('copyGlobalToWorkspace', false);
+  }
+
+  private async handleSyncConfigChange(event: vscode.ConfigurationChangeEvent): Promise<void> {
+    const wsToGlobal = 'commands-manager-next.tasks.copyWorkspaceToGlobal';
+    const globalToWs = 'commands-manager-next.tasks.copyGlobalToWorkspace';
+
+    // Handle mutual exclusion - only one sync direction at a time
+    if (event.affectsConfiguration(wsToGlobal)) {
+      const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
+      const isEnabled = config.get<boolean>('copyWorkspaceToGlobal', false);
+
+      if (isEnabled) {
+        // Disable the opposite direction
+        const otherEnabled = config.get<boolean>('copyGlobalToWorkspace', false);
+        if (otherEnabled) {
+          await config.update('copyGlobalToWorkspace', false, vscode.ConfigurationTarget.Global);
+        }
+        // Trigger initial sync from workspace to global
+        await this.syncWorkspaceToGlobal();
+      }
+    }
+
+    if (event.affectsConfiguration(globalToWs)) {
+      const config = vscode.workspace.getConfiguration('commands-manager-next.tasks');
+      const isEnabled = config.get<boolean>('copyGlobalToWorkspace', false);
+
+      if (isEnabled) {
+        // Disable the opposite direction
+        const otherEnabled = config.get<boolean>('copyWorkspaceToGlobal', false);
+        if (otherEnabled) {
+          await config.update('copyWorkspaceToGlobal', false, vscode.ConfigurationTarget.Global);
+        }
+        // Trigger initial sync from global to workspace
+        await this.syncGlobalToWorkspace();
+      }
+    }
+  }
+
+  private async syncWorkspaceToGlobal(): Promise<void> {
+    if (!this.shouldCopyWorkspaceToGlobal()) {
+      return;
+    }
+
+    try {
+      // Load current workspace config
+      const storageLocation = this.getStorageLocation();
+
+      // Only sync if workspace storage is being used
+      if (storageLocation === 'workspace' || storageLocation === 'both') {
+        await this.ensureCommandsDirectoryExists();
+
+        // Silently skip if workspace file doesn't exist yet
+        if (!fs.existsSync(this.configPath)) {
+          console.log('Sync skipped: Workspace config file does not exist yet');
+          return;
+        }
+
+        const configData = await fs.promises.readFile(this.configPath, 'utf8');
+        const parsedConfig = JSON.parse(configData);
+        const validation = validateConfig(parsedConfig);
+
+        if (validation.valid) {
+          console.log('Syncing workspace commands to global...');
+          await this.incrementalCopyToGlobal(parsedConfig);
+          // Reload config to reflect merged state
+          await this.loadConfig();
+          this.notifyConfigChange();
+          console.log('Workspace to global sync completed');
+        } else {
+          console.warn('Workspace config validation failed:', validation.errors);
+        }
+      }
+    } catch (error) {
+      // Silently log errors - sync is not critical
+      console.error('Failed to sync workspace to global:', error);
+    }
+  }
+
+  private async syncGlobalToWorkspace(): Promise<void> {
+    if (!this.shouldCopyGlobalToWorkspace()) {
+      return;
+    }
+
+    try {
+      // Load current global config
+      const storageLocation = this.getStorageLocation();
+
+      // Only sync if workspace or both storage is being used
+      if (storageLocation === 'workspace' || storageLocation === 'both') {
+        // Ensure both directories exist
+        await this.ensureGlobalDirectoryExists();
+        await this.ensureCommandsDirectoryExists();
+
+        // Silently skip if global file doesn't exist yet
+        if (!fs.existsSync(this.globalConfigPath)) {
+          console.log('Sync skipped: Global config file does not exist yet');
+          return;
+        }
+
+        const configData = await fs.promises.readFile(this.globalConfigPath, 'utf8');
+        const parsedConfig = JSON.parse(configData);
+        const validation = validateConfig(parsedConfig);
+
+        if (validation.valid) {
+          console.log('Syncing global commands to workspace...');
+          await this.incrementalCopyToWorkspace(parsedConfig);
+          // Reload config to reflect merged state
+          await this.loadConfig();
+          this.notifyConfigChange();
+          console.log('Global to workspace sync completed');
+        } else {
+          console.warn('Global config validation failed:', validation.errors);
+        }
+      }
+    } catch (error) {
+      // Silently log errors - sync is not critical
+      console.error('Failed to sync global to workspace:', error);
+    }
+  }
+
   public async initialize(): Promise<void> {
+    // Setup configuration change listener for sync
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      await this.handleSyncConfigChange(event);
+    });
     // Prime in-memory caches from disk so downstream consumers have data immediately.
     await this.loadConfig();
     await this.loadTimeTrackerConfig();
     // Watch the files so live edits stay in sync without manual reloads.
     this.setupFileWatcher();
     this.setupTimeTrackerFileWatcher();
+    // Trigger initial sync if enabled
+    if (this.shouldCopyWorkspaceToGlobal()) {
+      await this.syncWorkspaceToGlobal();
+    } else if (this.shouldCopyGlobalToWorkspace()) {
+      await this.syncGlobalToWorkspace();
+    }
     // Ensure initial consumers refresh with loaded config
     this.notifyConfigChange();
     this.notifyTimeTrackerChange();
@@ -103,8 +241,16 @@ export class ConfigManager {
     // Save to appropriate location(s)
     if (storageLocation === 'workspace') {
       await this.writeCommandsConfigToDisk(config);
+      // Check if we should copy to global (incrementally)
+      if (this.shouldCopyWorkspaceToGlobal()) {
+        await this.incrementalCopyToGlobal(config);
+      }
     } else if (storageLocation === 'global') {
       await this.writeGlobalCommandsConfigToDisk(config);
+      // Check if we should copy to workspace (incrementally)
+      if (this.shouldCopyGlobalToWorkspace()) {
+        await this.incrementalCopyToWorkspace(config);
+      }
     } else if (storageLocation === 'both') {
       // When in 'both' mode, save to workspace by default
       // User can manually edit global config if needed
@@ -113,6 +259,214 @@ export class ConfigManager {
 
     this.config = config;
     this.notifyConfigChange();
+  }
+
+  private async incrementalCopyToGlobal(sourceConfig: CommandConfig): Promise<void> {
+    // Ensure global directory exists first
+    await this.ensureGlobalDirectoryExists();
+
+    // Load existing global config
+    let targetConfig: CommandConfig;
+
+    if (fs.existsSync(this.globalConfigPath)) {
+      try {
+        const configData = await fs.promises.readFile(this.globalConfigPath, 'utf8');
+        const parsedConfig = JSON.parse(configData);
+        const validation = validateConfig(parsedConfig);
+
+        if (validation.valid) {
+          targetConfig = parsedConfig;
+        } else {
+          targetConfig = getDefaultConfig();
+        }
+      } catch (error) {
+        targetConfig = getDefaultConfig();
+      }
+    } else {
+      targetConfig = getDefaultConfig();
+    }
+
+    // Merge incrementally (don't overwrite existing)
+    const mergedConfig = this.incrementalMerge(targetConfig, sourceConfig);
+
+    // Save merged config to global
+    await this.writeGlobalCommandsConfigToDisk(mergedConfig);
+  }
+
+  private async incrementalCopyToWorkspace(sourceConfig: CommandConfig): Promise<void> {
+    // Ensure workspace directory exists first
+    await this.ensureCommandsDirectoryExists();
+
+    // Load existing workspace config
+    let targetConfig: CommandConfig;
+
+    if (fs.existsSync(this.configPath)) {
+      try {
+        const configData = await fs.promises.readFile(this.configPath, 'utf8');
+        const parsedConfig = JSON.parse(configData);
+        const validation = validateConfig(parsedConfig);
+
+        if (validation.valid) {
+          targetConfig = parsedConfig;
+        } else {
+          targetConfig = getDefaultConfig();
+        }
+      } catch (error) {
+        targetConfig = getDefaultConfig();
+      }
+    } else {
+      targetConfig = getDefaultConfig();
+    }
+
+    // Merge incrementally (don't overwrite existing)
+    const mergedConfig = this.incrementalMerge(targetConfig, sourceConfig);
+
+    // Save merged config to workspace
+    await this.writeCommandsConfigToDisk(mergedConfig);
+  }
+
+  private incrementalMerge(target: CommandConfig, source: CommandConfig): CommandConfig {
+    // Create a deep copy of target config
+    const merged: CommandConfig = JSON.parse(JSON.stringify(target));
+
+    // Helper to get all command IDs recursively from folders
+    const getAllCommandIds = (folders: any[]): Set<string> => {
+      const ids = new Set<string>();
+      const traverse = (items: any[]) => {
+        for (const item of items) {
+          if (item.id && item.command) {
+            // It's a command
+            ids.add(item.id);
+          } else if (item.folders || item.commands) {
+            // It's a folder
+            if (item.commands) {
+              traverse(item.commands);
+            }
+            if (item.folders) {
+              traverse(item.folders);
+            }
+          }
+        }
+      };
+      traverse(folders);
+      return ids;
+    };
+
+    // Helper to get all folder IDs recursively
+    const getAllFolderIds = (folders: any[]): Set<string> => {
+      const ids = new Set<string>();
+      const traverse = (items: any[]) => {
+        for (const item of items) {
+          if (item.id && (item.folders || item.commands)) {
+            // It's a folder
+            ids.add(item.id);
+            if (item.folders) {
+              traverse(item.folders);
+            }
+          }
+        }
+      };
+      traverse(folders);
+      return ids;
+    };
+
+    // Get existing IDs from target
+    const existingCommandIds = getAllCommandIds(merged.folders);
+    const existingFolderIds = getAllFolderIds(merged.folders);
+
+    // Helper to add non-existing items from source folders
+    const mergeItems = (targetItems: any[], sourceItems: any[]) => {
+      const result = [...targetItems];
+
+      for (const sourceItem of sourceItems) {
+        if (sourceItem.id && sourceItem.command) {
+          // It's a command
+          if (!existingCommandIds.has(sourceItem.id)) {
+            result.push(sourceItem);
+            existingCommandIds.add(sourceItem.id);
+          }
+        } else if (sourceItem.id && (sourceItem.folders || sourceItem.commands)) {
+          // It's a folder
+          if (!existingFolderIds.has(sourceItem.id)) {
+            // Folder doesn't exist, add it entirely
+            result.push(sourceItem);
+            existingFolderIds.add(sourceItem.id);
+          } else {
+            // Folder exists, merge its contents
+            const targetFolder = result.find(f => f.id === sourceItem.id);
+            if (targetFolder) {
+              if (sourceItem.commands && sourceItem.commands.length > 0) {
+                targetFolder.commands = mergeItems(targetFolder.commands || [], sourceItem.commands);
+              }
+              if (sourceItem.folders && sourceItem.folders.length > 0) {
+                targetFolder.folders = mergeItems(targetFolder.folders || [], sourceItem.folders);
+              }
+            }
+          }
+        }
+      }
+
+      return result;
+    };
+
+    // Merge folders and commands
+    if (source.folders && source.folders.length > 0) {
+      merged.folders = mergeItems(merged.folders, source.folders);
+    }
+
+    // Merge test runners - add test runners with distinct IDs
+    if (source.testRunners && source.testRunners.length > 0) {
+      if (!merged.testRunners) {
+        merged.testRunners = [];
+      }
+      const existingRunnerIds = new Set(merged.testRunners.map(r => r.id));
+      for (const runner of source.testRunners) {
+        if (!existingRunnerIds.has(runner.id)) {
+          merged.testRunners.push(runner);
+        }
+      }
+    }
+
+    // Merge pinned commands
+    if (source.pinnedCommands && source.pinnedCommands.length > 0) {
+      if (!merged.pinnedCommands) {
+        merged.pinnedCommands = [];
+      }
+      const existingPinnedIds = new Set(merged.pinnedCommands);
+      for (const pinnedId of source.pinnedCommands) {
+        if (!existingPinnedIds.has(pinnedId)) {
+          merged.pinnedCommands.push(pinnedId);
+        }
+      }
+    }
+
+    // Merge shared variables
+    if (source.sharedVariables && source.sharedVariables.length > 0) {
+      if (!merged.sharedVariables) {
+        merged.sharedVariables = [];
+      }
+      const existingVarKeys = new Set(merged.sharedVariables.map(v => v.key));
+      for (const variable of source.sharedVariables) {
+        if (!existingVarKeys.has(variable.key)) {
+          merged.sharedVariables.push(variable);
+        }
+      }
+    }
+
+    // Merge shared lists
+    if (source.sharedLists && source.sharedLists.length > 0) {
+      if (!merged.sharedLists) {
+        merged.sharedLists = [];
+      }
+      const existingListKeys = new Set(merged.sharedLists.map(l => l.key));
+      for (const list of source.sharedLists) {
+        if (!existingListKeys.has(list.key)) {
+          merged.sharedLists.push(list);
+        }
+      }
+    }
+
+    return merged;
   }
 
   public async loadConfig(): Promise<void> {
@@ -156,7 +510,7 @@ export class ConfigManager {
       }
 
       // Load global config if needed
-      if (storageLocation === 'global' || storageLocation === 'both') {
+      if (storageLocation === 'global' || storageLocation === 'both' || preferGlobal) {
         // Ensure global directory exists without creating workspace directory
         const globalDir = path.dirname(this.globalConfigPath);
         if (!fs.existsSync(globalDir)) {
@@ -203,7 +557,12 @@ export class ConfigManager {
 
       // Merge configs based on storage location and preferences
       if (storageLocation === 'workspace') {
-        this.config = workspaceConfig || getDefaultConfig();
+        // If preferGlobal is enabled and global config exists, use it as base
+        if (preferGlobal && globalConfig) {
+          this.config = this.mergeConfigs(globalConfig, workspaceConfig);
+        } else {
+          this.config = workspaceConfig || getDefaultConfig();
+        }
         if (!workspaceConfig) {
           await this.writeCommandsConfigToDisk(this.config);
         }
@@ -236,7 +595,16 @@ export class ConfigManager {
         this.config.pinnedCommands = [];
       }
     } catch (error) {
-      vscode.window.showErrorMessage(`Failed to load configuration: ${error}`);
+      // Check if it's just a file-not-found error (first run scenario)
+      const isFileNotFound = error instanceof Error &&
+        ('code' in error && (error as any).code === 'ENOENT');
+
+      if (!isFileNotFound) {
+        // Only show error for real problems, not missing files
+        const message = error instanceof Error ? error.message : String(error);
+        vscode.window.showErrorMessage(`Failed to load configuration: ${message}`);
+      }
+
       this.config = getDefaultConfig();
 
       // Save to appropriate location based on storage setting
@@ -334,7 +702,6 @@ export class ConfigManager {
         this.timeTrackerConfig = this.mergeWithDefaultTimeTracker(this.pendingMigratedTimeTracker);
         this.pendingMigratedTimeTracker = undefined;
         await this.saveTimeTrackerConfig(this.timeTrackerConfig, { suppressNotification: true });
-        await this.writeTimeTrackerBackup();
         return;
       }
 
@@ -347,7 +714,6 @@ export class ConfigManager {
         // Only create file if it doesn't exist at all - never recreate on failure
         this.timeTrackerConfig = getDefaultTimeTrackerConfig();
         await this.saveTimeTrackerConfig(this.timeTrackerConfig, { suppressNotification: true });
-        await this.writeTimeTrackerBackup();
         return;
       }
 
@@ -382,7 +748,6 @@ export class ConfigManager {
       if (validation.valid) {
         // Success: ensure optional properties exist and keep the results.
         this.timeTrackerConfig = this.mergeWithDefaultTimeTracker(parsedConfig);
-        await this.writeTimeTrackerBackup();
         return;
       }
 
@@ -395,12 +760,24 @@ export class ConfigManager {
       );
       this.timeTrackerConfig = getDefaultTimeTrackerConfig();
     } catch (error) {
-      // On any error, try backup first
+      // Check if it's just a file-not-found error (first run scenario)
+      const isFileNotFound = error instanceof Error &&
+        ('code' in error && (error as any).code === 'ENOENT');
+
+      if (isFileNotFound) {
+        // File doesn't exist - this is normal for first run, just use defaults silently
+        this.timeTrackerConfig = getDefaultTimeTrackerConfig();
+        return;
+      }
+
+      // For other errors, try backup first
       if (await this.attemptRestoreTimeTrackerConfigFromBackup('Failed to load time tracker configuration. Restored from backup file.')) {
         return;
       }
+
+      // Only show error message for real errors, not missing files
       const message = error instanceof Error ? error.message : String(error);
-      vscode.window.showErrorMessage(`Failed to load time tracker configuration (${message}). No backup found. Using defaults in memory; the file was left untouched.`);
+      vscode.window.showErrorMessage(`Failed to load time tracker configuration (${message}). Using defaults in memory; the file was left untouched.`);
       this.timeTrackerConfig = getDefaultTimeTrackerConfig();
     }
   }
@@ -586,7 +963,6 @@ export class ConfigManager {
 
       this.timeTrackerConfig = this.mergeWithDefaultTimeTracker(parsedConfig);
       await this.writeTimeTrackerConfigToDisk(this.timeTrackerConfig, { skipBackup: true });
-      await this.writeTimeTrackerBackup();
 
       // Always show a message when restoring from backup
       const displayMessage = message || 'Time tracker configuration restored from backup file.';
@@ -602,15 +978,10 @@ export class ConfigManager {
   private async writeTimeTrackerConfigToDisk(config: TimeTrackerConfig, options?: { skipBackup?: boolean }): Promise<void> {
     await this.ensureCommandsDirectoryExists(true);
 
-    // Ensure the directory exists before writing
-    const timerDir = path.dirname(this.timeTrackerConfigPath);
-    if (!fs.existsSync(timerDir)) {
-      await fs.promises.mkdir(timerDir, { recursive: true });
-    }
-
     const jsonContent = JSON.stringify(config, null, 2);
     const tempPath = `${this.timeTrackerConfigPath}.tmp`;
 
+    // Create backup before writing if file exists and backup not skipped
     if (!options?.skipBackup && fs.existsSync(this.timeTrackerConfigPath)) {
       try {
         await fs.promises.copyFile(this.timeTrackerConfigPath, this.getTimeTrackerBackupPath());
@@ -619,25 +990,23 @@ export class ConfigManager {
       }
     }
 
-    await fs.promises.writeFile(tempPath, jsonContent, 'utf8');
-
-    if (fs.existsSync(this.timeTrackerConfigPath)) {
-      try {
-        await fs.promises.unlink(this.timeTrackerConfigPath);
-      } catch {
-        // If unlink fails, attempt to overwrite via rename anyway.
-      }
-    }
-
+    // Use atomic write with temp file
     try {
+      await fs.promises.writeFile(tempPath, jsonContent, 'utf8');
       await fs.promises.rename(tempPath, this.timeTrackerConfigPath);
-    } catch {
+    } catch (error) {
       // Fallback: attempt direct write and clean up temp file.
-      await fs.promises.writeFile(this.timeTrackerConfigPath, jsonContent, 'utf8');
       try {
-        await fs.promises.unlink(tempPath);
-      } catch {
-        // ignore cleanup failure
+        await fs.promises.writeFile(this.timeTrackerConfigPath, jsonContent, 'utf8');
+      } finally {
+        // Clean up temp file if it exists
+        try {
+          if (fs.existsSync(tempPath)) {
+            await fs.promises.unlink(tempPath);
+          }
+        } catch {
+          // Ignore cleanup failure
+        }
       }
     }
   }
@@ -728,26 +1097,12 @@ export class ConfigManager {
 
   private async writeCommandsConfigToDisk(config: CommandConfig): Promise<void> {
     await this.ensureCommandsDirectoryExists();
-
-    // Ensure the directory exists before writing
-    const commandsDir = path.dirname(this.configPath);
-    if (!fs.existsSync(commandsDir)) {
-      await fs.promises.mkdir(commandsDir, { recursive: true });
-    }
-
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.configPath, configJson, 'utf8');
   }
 
   private async writeGlobalCommandsConfigToDisk(config: CommandConfig): Promise<void> {
     await this.ensureGlobalDirectoryExists();
-
-    // Ensure the directory exists before writing
-    const globalDir = path.dirname(this.globalConfigPath);
-    if (!fs.existsSync(globalDir)) {
-      await fs.promises.mkdir(globalDir, { recursive: true });
-    }
-
     const configJson = JSON.stringify(config, null, 2);
     await fs.promises.writeFile(this.globalConfigPath, configJson, 'utf8');
   }
@@ -758,7 +1113,11 @@ export class ConfigManager {
     }
 
     try {
-      await this.ensureCommandsDirectoryExists();
+      // Ensure target directory exists before attempting migration
+      const commandsDir = path.dirname(this.configPath);
+      if (!fs.existsSync(commandsDir)) {
+        await fs.promises.mkdir(commandsDir, { recursive: true });
+      }
       await fs.promises.copyFile(this.legacyConfigPath, this.configPath);
       await fs.promises.unlink(this.legacyConfigPath);
     } catch {
@@ -772,7 +1131,11 @@ export class ConfigManager {
     }
 
     try {
-      await this.ensureCommandsDirectoryExists(true);
+      // Ensure target directory exists before attempting migration
+      const commandsDir = path.dirname(this.timeTrackerConfigPath);
+      if (!fs.existsSync(commandsDir)) {
+        await fs.promises.mkdir(commandsDir, { recursive: true });
+      }
       await fs.promises.copyFile(this.legacyTimeTrackerPath, this.timeTrackerConfigPath);
       await fs.promises.unlink(this.legacyTimeTrackerPath);
     } catch {

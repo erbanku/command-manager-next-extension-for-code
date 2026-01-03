@@ -2,7 +2,7 @@
   "name": "commands-manager-next",
   "displayName": "Commands Manager Next",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "publisher": "erbanku",
   "engines": {
     "vscode": "^1.85.0"
@@ -53,7 +53,7 @@
       "activitybar": [
         {
           "id": "command-manager",
-          "title": "Tasks, Tests & Doc Hub",
+          "title": "Commands Manager Next",
           "icon": "resources/activitybar-icon.png"
         }
       ]
@@ -62,12 +62,12 @@
       "command-manager": [
         {
           "id": "commandManagerTree",
-          "name": "Tasks",
+          "name": "Commands",
           "group": "1_commands"
         },
         {
           "id": "documentationHubTree",
-          "name": "Documentation Hub",
+          "name": "Docs Hub",
           "group": "2_documentation"
         },
         {
@@ -85,331 +85,331 @@
     "commands": [
       {
         "command": "commands-manager-next.tasks.runCommand",
-        "title": "CMN Run Command",
+        "title": "Run Command",
         "icon": "$(play)"
       },
       {
         "command": "commands-manager-next.tasks.runCommandById",
-        "title": "CMN Run Saved Command"
+        "title": "Run Saved Command"
       },
       {
         "command": "commands-manager-next.tasks.editCommand",
-        "title": "CMN Edit Command",
+        "title": "Edit Command",
         "icon": "$(edit)"
       },
       {
         "command": "commands-manager-next.tasks.newCommand",
-        "title": "CMN New Command",
+        "title": "New Command",
         "icon": "$(add)"
       },
       {
         "command": "commands-manager-next.tasks.newFolder",
-        "title": "CMN New Folder",
+        "title": "New Folder",
         "icon": "$(new-folder)"
       },
       {
         "command": "commands-manager-next.tasks.editFolder",
-        "title": "CMN Edit Folder",
+        "title": "Edit Folder",
         "icon": "$(gear)"
       },
       {
         "command": "commands-manager-next.tasks.duplicateCommand",
-        "title": "CMN Duplicate Command"
+        "title": "Duplicate Command"
       },
       {
         "command": "commands-manager-next.tasks.pinToStatusBar",
-        "title": "CMN Pin Command in Status Bar"
+        "title": "Pin Command in Status Bar"
       },
       {
         "command": "commands-manager-next.tasks.convertWorkspaceTask",
-        "title": "CMN Convert to Editable Task",
+        "title": "Convert to Editable Task",
         "icon": "$(edit)"
       },
       {
         "command": "commands-manager-next.tasks.moveItemUp",
-        "title": "CMN Move Up",
+        "title": "Move Up",
         "icon": "$(arrow-up)"
       },
       {
         "command": "commands-manager-next.tasks.moveItemDown",
-        "title": "CMN Move Down",
+        "title": "Move Down",
         "icon": "$(arrow-down)"
       },
       {
         "command": "commands-manager-next.tasks.moveItemToFolder",
-        "title": "CMN Move to Folder",
+        "title": "Move to Folder",
         "icon": "$(folder-move)"
       },
       {
         "command": "commands-manager-next.tasks.deleteItem",
-        "title": "CMN Delete",
+        "title": "Delete",
         "icon": "$(trash)"
       },
       {
         "command": "commands-manager-next.tasks.openConfig",
-        "title": "CMN Open Configuration File"
+        "title": "Open Configuration File"
       },
       {
         "command": "commands-manager-next.tasks.refresh",
-        "title": "CMN Refresh",
+        "title": "Refresh",
         "icon": "$(refresh)"
       },
       {
         "command": "commands-manager-next.tasks.openConfiguration",
-        "title": "CMN Task and Documentation Hub: Configuration",
+        "title": "Task and Docs Hub: Configuration",
         "icon": "$(gear)"
       },
       {
         "command": "commands-manager-next.tasks.quickRun",
-        "title": "CMN Run Saved Command",
+        "title": "Run Saved Command",
         "icon": "$(rocket)"
       },
       {
         "command": "commands-manager-next.docs.openFile",
-        "title": "CMN Documentation Hub: Open File"
+        "title": "Docs Hub: Open File"
       },
       {
         "command": "commands-manager-next.docs.copyPath",
-        "title": "CMN Documentation Hub: Copy Path"
+        "title": "Docs Hub: Copy Path"
       },
       {
         "command": "commands-manager-next.docs.extractCommands",
-        "title": "CMN Documentation Hub: Extract Tasks"
+        "title": "Docs Hub: Extract Tasks"
       },
       {
         "command": "commands-manager-next.docs.search",
-        "title": "CMN Documentation Hub: Search",
+        "title": "Docs Hub: Search",
         "icon": "$(search)"
       },
       {
         "command": "commands-manager-next.docs.toggleViewMode",
-        "title": "CMN Documentation Hub: Toggle View Mode",
+        "title": "Docs Hub: Toggle View Mode",
         "icon": "$(list-tree)"
       },
       {
         "command": "commands-manager-next.docs.refresh",
-        "title": "CMN Documentation Hub: Refresh",
+        "title": "Docs Hub: Refresh",
         "icon": "$(refresh)"
       },
       {
         "command": "commands-manager-next.docs.openSection",
-        "title": "CMN Documentation Hub: Open Section"
+        "title": "Docs Hub: Open Section"
       },
       {
         "command": "commands-manager-next.docs.hideItem",
-        "title": "CMN Documentation Hub: Hide Item"
+        "title": "Docs Hub: Hide Item"
       },
       {
         "command": "commands-manager-next.docs.unhideItem",
-        "title": "CMN Documentation Hub: Unhide Item"
+        "title": "Docs Hub: Unhide Item"
       },
       {
         "command": "commands-manager-next.docs.unhideAll",
-        "title": "CMN Documentation Hub: Unhide All",
+        "title": "Docs Hub: Unhide All",
         "icon": "$(eye)"
       },
       {
         "command": "commands-manager-next.tests.newConfiguration",
-        "title": "CMN Test Runner: New Configuration",
+        "title": "Test Runner: New Configuration",
         "icon": "$(add)"
       },
       {
         "command": "commands-manager-next.tests.openConfiguration",
-        "title": "CMN Test Runner: Open Configuration",
+        "title": "Test Runner: Open Configuration",
         "icon": "$(gear)"
       },
       {
         "command": "commands-manager-next.tests.runAll",
-        "title": "CMN Test Runner: Run All",
+        "title": "Test Runner: Run All",
         "icon": "$(run-all)"
       },
       {
         "command": "commands-manager-next.tests.stopAll",
-        "title": "CMN Test Runner: Stop All",
+        "title": "Test Runner: Stop All",
         "icon": "$(debug-stop)"
       },
       {
         "command": "commands-manager-next.tests.runConfiguration",
-        "title": "CMN Test Runner: Run Configuration",
+        "title": "Test Runner: Run Configuration",
         "icon": "$(play-circle)"
       },
       {
         "command": "commands-manager-next.tests.runFolder",
-        "title": "CMN Test Runner: Run All Tests in Folder",
+        "title": "Test Runner: Run All Tests in Folder",
         "icon": "$(play-circle)"
       },
       {
         "command": "commands-manager-next.tests.runFile",
-        "title": "CMN Test Runner: Run All Tests in File",
+        "title": "Test Runner: Run All Tests in File",
         "icon": "$(play-circle)"
       },
       {
         "command": "commands-manager-next.tests.runTestCase",
-        "title": "CMN Test Runner: Run All Tests in Test Case",
+        "title": "Test Runner: Run All Tests in Test Case",
         "icon": "$(play-circle)"
       },
       {
         "command": "commands-manager-next.tests.expandAll",
-        "title": "CMN Test Runner: Expand All",
+        "title": "Test Runner: Expand All",
         "icon": "$(expand-all)"
       },
       {
         "command": "commands-manager-next.tests.collapseAll",
-        "title": "CMN Test Runner: Collapse All",
+        "title": "Test Runner: Collapse All",
         "icon": "$(collapse-all)"
       },
       {
         "command": "commands-manager-next.tests.refresh",
-        "title": "CMN Test Runner: Refresh",
+        "title": "Test Runner: Refresh",
         "icon": "$(refresh)"
       },
       {
         "command": "commands-manager-next.tests.search",
-        "title": "CMN Test Runner: Search",
+        "title": "Test Runner: Search",
         "icon": "$(search)"
       },
       {
         "command": "commands-manager-next.tests.findTests",
-        "title": "CMN Find Tests",
+        "title": "Find Tests",
         "icon": "$(search)"
       },
       {
         "command": "commands-manager-next.tests.moveUp",
-        "title": "CMN Test Runner: Move Up",
+        "title": "Test Runner: Move Up",
         "icon": "$(arrow-up)"
       },
       {
         "command": "commands-manager-next.tests.moveDown",
-        "title": "CMN Test Runner: Move Down",
+        "title": "Test Runner: Move Down",
         "icon": "$(arrow-down)"
       },
       {
         "command": "commands-manager-next.tests.moveTo",
-        "title": "CMN Test Runner: Move To",
+        "title": "Test Runner: Move To",
         "icon": "$(list-selection)"
       },
       {
         "command": "commands-manager-next.tests.disableConfiguration",
-        "title": "CMN Test Runner: Disable Configuration",
+        "title": "Test Runner: Disable Configuration",
         "icon": "$(eye-closed)"
       },
       {
         "command": "commands-manager-next.tests.enableConfiguration",
-        "title": "CMN Test Runner: Enable Configuration",
+        "title": "Test Runner: Enable Configuration",
         "icon": "$(eye)"
       },
       {
         "command": "commands-manager-next.tests.runTest",
-        "title": "CMN Test Runner: Run Test",
+        "title": "Test Runner: Run Test",
         "icon": "$(play-circle)"
       },
       {
         "command": "commands-manager-next.tests.ignoreTest",
-        "title": "CMN Test Runner: Ignore Test",
+        "title": "Test Runner: Ignore Test",
         "icon": "$(circle-slash)"
       },
       {
         "command": "commands-manager-next.tests.gotoTest",
-        "title": "CMN Test Runner: Open Test",
+        "title": "Test Runner: Open Test",
         "icon": "$(go-to-file)"
       },
       {
         "command": "commands-manager-next.time.startTimer",
-        "title": "CMN Time Tracker: Start Timer",
+        "title": "Time Tracker: Start Timer",
         "icon": "$(play)"
       },
       {
         "command": "commands-manager-next.time.stopTimer",
-        "title": "CMN Time Tracker: Stop Timer",
+        "title": "Time Tracker: Stop Timer",
         "icon": "$(debug-stop)"
       },
       {
         "command": "commands-manager-next.time.resumeTimer",
-        "title": "CMN Time Tracker: Resume Timer",
+        "title": "Time Tracker: Resume Timer",
         "icon": "$(play)"
       },
       {
         "command": "commands-manager-next.time.stopAll",
-        "title": "CMN Time Tracker: Stop All Timers",
+        "title": "Time Tracker: Stop All Timers",
         "icon": "$(stop-circle)"
       },
       {
         "command": "commands-manager-next.time.editTimer",
-        "title": "CMN Time Tracker: Edit Timer",
+        "title": "Time Tracker: Edit Timer",
         "icon": "$(edit)"
       },
       {
         "command": "commands-manager-next.time.deleteTimer",
-        "title": "CMN Time Tracker: Delete Timer",
+        "title": "Time Tracker: Delete Timer",
         "icon": "$(trash)"
       },
       {
         "command": "commands-manager-next.time.archiveTimer",
-        "title": "CMN Time Tracker: Archive Timer",
+        "title": "Time Tracker: Archive Timer",
         "icon": "$(archive)"
       },
       {
         "command": "commands-manager-next.time.newFolder",
-        "title": "CMN Time Tracker: New Folder",
+        "title": "Time Tracker: New Folder",
         "icon": "$(new-folder)"
       },
       {
         "command": "commands-manager-next.time.moveToFolder",
-        "title": "CMN Time Tracker: Move to Folder",
+        "title": "Time Tracker: Move to Folder",
         "icon": "$(file-directory)"
       },
       {
         "command": "commands-manager-next.time.moveTimerUp",
-        "title": "CMN Time Tracker: Move Timer Up",
+        "title": "Time Tracker: Move Timer Up",
         "icon": "$(arrow-up)"
       },
       {
         "command": "commands-manager-next.time.moveTimerDown",
-        "title": "CMN Time Tracker: Move Timer Down",
+        "title": "Time Tracker: Move Timer Down",
         "icon": "$(arrow-down)"
       },
       {
         "command": "commands-manager-next.time.refresh",
-        "title": "CMN Time Tracker: Refresh",
+        "title": "Time Tracker: Refresh",
         "icon": "$(refresh)"
       },
       {
         "command": "commands-manager-next.time.toggleEnabled",
-        "title": "CMN Time Tracker: Enable/Disable",
+        "title": "Time Tracker: Enable/Disable",
         "icon": "$(circle-slash)"
       },
       {
         "command": "commands-manager-next.time.toggleBranchAutomation",
-        "title": "CMN Time Tracker: Toggle Branch Automation",
+        "title": "Time Tracker: Toggle Branch Automation",
         "icon": "$(git-branch)"
       },
       {
         "command": "commands-manager-next.time.focusView",
-        "title": "CMN Time Tracker: Focus View"
+        "title": "Time Tracker: Focus View"
       },
       {
         "command": "commands-manager-next.time.createSubTimer",
-        "title": "CMN Time Tracker: Create SubTimer",
+        "title": "Time Tracker: Create SubTimer",
         "icon": "$(add)"
       },
       {
         "command": "commands-manager-next.time.startSubTimer",
-        "title": "CMN Time Tracker: Resume SubTimer",
+        "title": "Time Tracker: Resume SubTimer",
         "icon": "$(play)"
       },
       {
         "command": "commands-manager-next.time.stopSubTimer",
-        "title": "CMN Time Tracker: Stop SubTimer",
+        "title": "Time Tracker: Stop SubTimer",
         "icon": "$(debug-stop)"
       },
       {
         "command": "commands-manager-next.time.editSubTimer",
-        "title": "CMN Time Tracker: Rename SubTimer",
+        "title": "Time Tracker: Rename SubTimer",
         "icon": "$(edit)"
       },
       {
         "command": "commands-manager-next.time.deleteSubTimer",
-        "title": "CMN Time Tracker: Delete SubTimer",
+        "title": "Time Tracker: Delete SubTimer",
         "icon": "$(trash)"
       }
     ],
@@ -830,22 +830,38 @@
             "both"
           ],
           "default": "workspace",
-          "description": "Choose where to save commands: 'workspace' saves to .vscode/commands in the current workspace, 'global' saves to a global directory (~/.vscode/commands), 'both' uses both locations."
+          "description": "Choose where to save commands: 'workspace' saves to .vscode/commands in the current workspace, 'global' saves to a global directory (~/.vscode/commands), 'both' uses both locations.",
+          "order": 1
+        },
+        "commands-manager-next.tasks.autoCreateCommandsDirectory": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically create the commands directory when opening a workspace. When disabled, the directory is only created when you explicitly create a command.",
+          "order": 2
+        },
+        "commands-manager-next.tasks.addCommandsToGitignore": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically add the commands directory to .gitignore if the workspace is a Git repository. Helps keep local commands private.",
+          "order": 3
+        },
+        "commands-manager-next.tasks.copyWorkspaceToGlobal": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, incrementally merge workspace commands to global storage. Only adds new commands that don't exist globally, never overwrites existing global commands. Automatically disables 'Copy Global to Workspace' for one-way sync.",
+          "order": 4
+        },
+        "commands-manager-next.tasks.copyGlobalToWorkspace": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, incrementally merge global commands to workspace storage. Only adds new commands that don't exist in workspace, never overwrites existing workspace commands. Automatically disables 'Copy Workspace to Global' for one-way sync.",
+          "order": 5
         },
         "commands-manager-next.tasks.preferGlobalCommands": {
           "type": "boolean",
           "default": false,
-          "description": "When enabled, global commands from ~/.vscode/commands are loaded as default commands instead of the built-in samples. Only applies when storage location is set to 'both'."
-        },
-        "commands-manager-next.tasks.autoCreateCommandsDirectory": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically create the commands directory when opening a workspace. When disabled, the directory is only created when you explicitly create a command."
-        },
-        "commands-manager-next.tasks.addCommandsToGitignore": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically add the commands directory to .gitignore if the workspace is a Git repository. Helps keep local commands private."
+          "description": "When enabled, loads commands from ~/.vscode/commands as the base configuration. Works with any storage location - global commands are merged with or replace workspace commands.",
+          "order": 6
         },
         "commands-manager-next.tasks.documentationHub.viewMode": {
           "type": "string",
@@ -854,7 +870,8 @@
             "flat"
           ],
           "default": "tree",
-          "description": "Choose whether the documentation hub displays markdown files in a folder tree or a flat list."
+          "description": "Choose whether the documentation hub displays markdown files in a folder tree or a flat list.",
+          "order": 7
         },
         "commands-manager-next.tasks.documentationHub.position": {
           "type": "string",
@@ -863,7 +880,8 @@
             "bottom"
           ],
           "default": "bottom",
-          "description": "Control whether the documentation hub appears above or below the command list in the Task and Documentation Hub view container."
+          "description": "Control whether the documentation hub appears above or below the command list in the Task and Docs Hub view container.",
+          "order": 8
         }
       }
     }

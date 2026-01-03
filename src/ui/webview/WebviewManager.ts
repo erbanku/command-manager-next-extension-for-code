@@ -36,7 +36,7 @@ export class WebviewManager {
   private timeTrackerTreeProvider?: { refresh: () => void };
   private treeProvider?: CommandTreeProvider;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): WebviewManager {
     if (!WebviewManager.instance) {
@@ -270,18 +270,18 @@ export class WebviewManager {
         case 'saveTestRunner':
           try {
             const sanitized = this.sanitizeTestRunnerInput(message.config);
-            
+
             await this.testRunnerManager.saveConfig(sanitized);
             // Update editor state
             this.sendTestRunnerState(sanitized, true);
-            
+
             // Trigger test discovery after save
             if (sanitized.activated && this.testRunnerTreeProvider) {
               try {
                 const tests = await this.testRunnerManager.discoverAndCacheTests(sanitized, this.testRunnerTreeProvider);
                 // Send discovered tests to the editor
-                this.testRunnerPanel?.webview.postMessage({ 
-                  type: 'testsDiscovered', 
+                this.testRunnerPanel?.webview.postMessage({
+                  type: 'testsDiscovered',
                   tests: tests.map(t => ({
                     label: t.label,
                     file: t.file.fsPath,
@@ -294,7 +294,7 @@ export class WebviewManager {
                 console.error('Test discovery failed after save:', discoveryError);
               }
             }
-            
+
             vscode.window.showInformationMessage(`Saved test runner "${sanitized.title}".`);
           } catch (error) {
             const messageText = error instanceof Error ? error.message : String(error);
@@ -323,7 +323,7 @@ export class WebviewManager {
               vscode.window.showWarningMessage('Cannot delete: No test runner ID provided.');
               break;
             }
-            
+
             // Show VS Code confirmation dialog
             const config = this.testRunnerManager.getConfigById(identifier);
             const configTitle = config?.title || 'this test runner';
@@ -332,7 +332,7 @@ export class WebviewManager {
               { modal: true },
               'Delete'
             );
-            
+
             if (confirmed === 'Delete') {
               await this.testRunnerManager.deleteConfig(identifier);
               vscode.window.showInformationMessage('Test runner deleted.');
@@ -361,7 +361,7 @@ export class WebviewManager {
           try {
             this.testRunnerManager.cancelRunAll();
             vscode.window.showInformationMessage('Stopping all tests...');
-          } catch {}
+          } catch { }
           break;
         case 'requestRefresh':
           {
@@ -388,7 +388,7 @@ export class WebviewManager {
             await this.testRunnerManager.saveConfig(sanitized);
             const tests = await this.testRunnerManager.discoverAndCacheTests(sanitized, this.testRunnerTreeProvider);
             // Only trigger refresh after tests were actually found
-            
+
             const testsForDisplay = tests.map(test => ({
               label: test.label,
               file: test.file.fsPath,
@@ -412,7 +412,7 @@ export class WebviewManager {
               const pattern = typeof message.pattern === 'string' ? message.pattern : '';
               const fileType = typeof message.fileType === 'string' ? message.fileType : 'javascript';
               const workingDirectory = typeof message.workingDirectory === 'string' ? message.workingDirectory : '';
-              
+
               if (!pattern || !fileType) {
                 this.testRunnerPanel?.webview.postMessage({
                   type: 'patternPreview',
@@ -439,7 +439,7 @@ export class WebviewManager {
                 const relativeFiles = files.map(file => {
                   return vscode.workspace.asRelativePath(file, false).replace(/\\/g, '/');
                 });
-                
+
                 this.testRunnerPanel?.webview.postMessage({
                   type: 'patternPreview',
                   count: relativeFiles.length,
@@ -618,7 +618,6 @@ export class WebviewManager {
 
       await this.configManager.saveConfig(config);
       this.treeProvider?.refresh();
-      vscode.window.showInformationMessage(`Command "${command.label}" saved successfully.`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`Failed to save command: ${message}`);
@@ -630,8 +629,10 @@ export class WebviewManager {
       const config = this.configManager.getConfig();
 
       if (context?.path && context.path.length > 0) {
+        // Editing existing folder
         this.replaceFolderAtPath(config.folders, context.path, folder);
-      } else if (context?.parentPath && context.parentPath.length > 0) {
+      } else if (context?.parentPath && Array.isArray(context.parentPath) && context.parentPath.length > 0) {
+        // Creating subfolder in a parent folder
         const parent = this.getFolderByPath(config.folders, context.parentPath);
         if (!parent) {
           throw new Error('Unable to locate parent folder.');
@@ -641,12 +642,12 @@ export class WebviewManager {
         }
         parent.subfolders.push(folder);
       } else {
+        // Creating new root-level folder
         config.folders.push(folder);
       }
 
       await this.configManager.saveConfig(config);
       this.treeProvider?.refresh();
-      vscode.window.showInformationMessage(`Folder "${folder.name}" saved successfully.`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`Failed to save folder: ${message}`);
@@ -741,7 +742,6 @@ export class WebviewManager {
       await this.configManager.saveConfig(parsed);
       this.treeProvider?.refresh();
       this.sendConfigToConfigPanel();
-      vscode.window.showInformationMessage('Configuration saved successfully.');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`Failed to save configuration: ${message}`);
@@ -926,12 +926,11 @@ export class WebviewManager {
     this.replaceFolderAtPath(current.subfolders, rest, folder);
   }
 
-
   public showTimerEditor(timerId: string): void {
     // Find timer in config
     const configManager = ConfigManager.getInstance();
     const timeTrackerConfig = configManager.getTimeTrackerConfig();
-    
+
     const findTimer = (folders: typeof timeTrackerConfig.folders): Timer | undefined => {
       for (const folder of folders) {
         for (const timer of folder.timers) {
@@ -944,7 +943,7 @@ export class WebviewManager {
       }
       return undefined;
     };
-    
+
     const timer = findTimer(timeTrackerConfig.folders);
     if (!timer) {
       vscode.window.showErrorMessage('Timer not found');
@@ -1116,7 +1115,7 @@ export class WebviewManager {
   private findTimerById(timerId: string): Timer | undefined {
     const configManager = ConfigManager.getInstance();
     const timeTrackerConfig = configManager.getTimeTrackerConfig();
-    
+
     const findTimer = (folders: typeof timeTrackerConfig.folders): Timer | undefined => {
       for (const folder of folders) {
         for (const timer of folder.timers) {
@@ -1129,7 +1128,7 @@ export class WebviewManager {
       }
       return undefined;
     };
-    
+
     return findTimer(timeTrackerConfig.folders);
   }
 

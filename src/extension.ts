@@ -48,6 +48,23 @@ export async function activate(context: vscode.ExtensionContext) {
     // Initialize configuration
     await configManager.initialize();
 
+    // Check if this is the first time the extension is activated
+    const hasShownWelcome = context.globalState.get<boolean>('hasShownWelcome', false);
+    if (!hasShownWelcome) {
+        const action = await vscode.window.showInformationMessage(
+            'Welcome to Commands Manager Next! Configure global settings to get started.',
+            'Open Settings',
+            'Dismiss'
+        );
+
+        if (action === 'Open Settings') {
+            await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:erbanku.commands-manager-next');
+        }
+
+        // Mark that we've shown the welcome message
+        await context.globalState.update('hasShownWelcome', true);
+    }
+
     // Create tree provider
     const treeProvider = new CommandTreeProvider();
     const commandTreeView = vscode.window.createTreeView('commandManagerTree', {
@@ -465,7 +482,6 @@ export async function activate(context: vscode.ExtensionContext) {
         await treeProvider.moveItemToFolder(item, target.path);
     });
 
-
     const editCommand = vscode.commands.registerCommand('commands-manager-next.tasks.editCommand', async (item: CommandTreeItem) => {
         if (item && item.isCommand()) {
             const command = item.getCommand();
@@ -667,7 +683,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
                 await configManager.saveConfig(config);
                 treeProvider.refresh();
-                vscode.window.showInformationMessage('Item deleted successfully');
             } catch (error) {
                 vscode.window.showErrorMessage(`Failed to delete item: ${error}`);
             }
@@ -678,10 +693,10 @@ export async function activate(context: vscode.ExtensionContext) {
         await configManager.openConfigFile();
     });
 
-    const refresh = vscode.commands.registerCommand('commands-manager-next.tasks.refresh', () => {
+    const refresh = vscode.commands.registerCommand('commands-manager-next.tasks.refresh', async () => {
+        await configManager.loadConfig();
         treeProvider.refresh();
     });
-
 
     // Webview commands
     const openConfiguration = vscode.commands.registerCommand('commands-manager-next.tasks.openConfiguration', () => {
@@ -1618,9 +1633,6 @@ export async function activate(context: vscode.ExtensionContext) {
         unhideDocumentationItem,
         unhideAllDocumentation
     );
-
-    // Show welcome message
-    vscode.window.showInformationMessage('Commands Manager Next extension activated! Use Ctrl+Shift+C for quick access.');
 }
 
 export async function deactivate() {

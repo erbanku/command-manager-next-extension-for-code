@@ -22,6 +22,11 @@ export function getDefaultConfig(): CommandConfig {
   return {
     folders: [
       {
+        name: 'Default',
+        icon: '$(folder)',
+        commands: []
+      },
+      {
         name: 'Samples',
         icon: '$(beaker)',
         commands: [

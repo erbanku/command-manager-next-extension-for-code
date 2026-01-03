@@ -1,340 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'nonce-{{nonce}}'; font-src https://cdn.jsdelivr.net; img-src {{cspSource}} data:;" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.css" />
-    <title>Folder Editor</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: var(--vscode-font-family);
-        color: var(--vscode-foreground);
-        background: var(--vscode-editor-background);
-      }
-      .icon-select-container {
-        position: relative;
-        width: 100%;
-      }
-      .icon-select-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .icon-dropdown {
-        position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
-        right: 0;
-        max-height: 260px;
-        overflow-y: auto;
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 6px;
-        background: var(--vscode-editor-background);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        display: none;
-        z-index: 1000;
-      }
-      .icon-dropdown button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        padding: 6px 10px;
-        border: none;
-        background: transparent;
-        color: inherit;
-        cursor: pointer;
-        text-align: left;
-        font-size: 12px;
-      }
-      .icon-dropdown button:hover {
-        background: var(--vscode-list-hoverBackground);
-      }
-      .container {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        max-width: 400px;
-      }
-      h1 {
-        margin: 0;
-        font-size: 16px;
-      }
-      form {
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 6px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      label {
-        display: block;
-        font-size: 11px;
-        color: var(--vscode-descriptionForeground);
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      input,
-      select {
-        width: 95%;
-        padding: 6px 8px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        font-size: 12px;
-      }
-      #folder-icon {
-        width: 100%;
-      }
-      .icon-preview {
-        display: inline-flex;
-        gap: 6px;
-        align-items: center;
-        font-size: 12px;
-        color: var(--vscode-descriptionForeground);
-      }
-      .icon-preview .codicon {
-        font-size: 16px;
-      }
-      .actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-      button {
-        border: none;
-        border-radius: 4px;
-        padding: 6px 16px;
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .primary-button {
-        background: var(--vscode-button-background);
-        color: var(--vscode-button-foreground);
-      }
-      .primary-button:hover {
-        background: var(--vscode-button-hoverBackground);
-      }
-      .secondary-button {
-        background: transparent;
-        color: var(--vscode-button-foreground);
-        border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1 id="title">Folder</h1>
-      <form id="folder-form">
-        <div>
-          <label for="folder-name">Label</label>
-          <input id="folder-name" type="text" required placeholder="Folder label" />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'nonce-{{nonce}}'; font-src https://cdn.jsdelivr.net; img-src {{cspSource}} data:;" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.css" />
+  <title>Folder Editor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: var(--vscode-font-family);
+      color: var(--vscode-foreground);
+      background: var(--vscode-editor-background);
+    }
+
+    .icon-select-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .icon-select-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .icon-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      background: var(--vscode-editor-background);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+    }
+
+    .icon-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .icon-dropdown button:hover {
+      background: var(--vscode-list-hoverBackground);
+    }
+
+    .container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 400px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    form {
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input,
+    select {
+      width: 95%;
+      padding: 6px 8px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-size: 12px;
+    }
+
+    #folder-icon {
+      width: 100%;
+    }
+
+    .icon-preview {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground);
+    }
+
+    .icon-preview .codicon {
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 6px 16px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .primary-button {
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+    }
+
+    .primary-button:hover {
+      background: var(--vscode-button-hoverBackground);
+    }
+
+    .secondary-button {
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
+      border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
+    }
+
+    .secondary-button:hover {
+      background: var(--vscode-button-secondaryHoverBackground);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 id="title">Folder</h1>
+    <form id="folder-form">
+      <div>
+        <label for="folder-name">Label</label>
+        <input id="folder-name" type="text" required placeholder="Folder label" />
+      </div>
+      <div>
+        <label for="folder-icon">Icon</label>
+        <div class="icon-select-container">
+          <button type="button" id="folder-icon-trigger" class="icon-select-trigger">
+            <span class="codicon" id="icon-trigger-symbol" style="display: none;"></span>
+            <span id="icon-trigger-text">No icon</span>
+          </button>
+          <div class="icon-dropdown" id="icon-dropdown"></div>
         </div>
-        <div>
-          <label for="folder-icon">Icon</label>
-          <div class="icon-select-container">
-            <button type="button" id="folder-icon-trigger" class="icon-select-trigger">
-              <span class="codicon" id="icon-trigger-symbol" style="display: none;"></span>
-              <span id="icon-trigger-text">No icon</span>
-            </button>
-            <div class="icon-dropdown" id="icon-dropdown"></div>
-          </div>
-          <select id="folder-icon" style="display: none;"></select>
-        </div>
-        <div class="actions">
-          <button type="button" id="cancel" class="secondary-button">Cancel</button>
-          <button type="submit" class="primary-button">Save folder</button>
-        </div>
-      </form>
-    </div>
-    <script nonce="{{nonce}}">
-      const vscode = acquireVsCodeApi();
-      const iconOptions = [
-        { value: '', label: 'No icon' },
-        { value: '$(folder)', label: 'Folder' },
-        { value: '$(library)', label: 'Library' },
-        { value: '$(repo)', label: 'Repository' },
-        { value: '$(archive)', label: 'Archive' },
-        { value: '$(briefcase)', label: 'Briefcase' },
-        { value: '$(organization)', label: 'Organization' },
-        { value: '$(folder-opened)', label: 'Folder Open' },
-        { value: '$(settings-gear)', label: 'Settings' },
-        { value: '$(gist-new)', label: 'New' },
-        { value: '$(add)', label: 'Add' },
-        { value: '$(trash)', label: 'Trash' },
-        { value: '$(star)', label: 'Star' },
-        { value: '$(heart)', label: 'Heart' },
-        { value: '$(tag)', label: 'Tag' },
-        { value: '$(bookmark)', label: 'Bookmark' },
-        { value: '$(sync)', label: 'Sync' },
-        { value: '$(refresh)', label: 'Refresh' }
-      ];
+        <select id="folder-icon" style="display: none;"></select>
+      </div>
+      <div class="actions">
+        <button type="button" id="cancel" class="secondary-button">Cancel</button>
+        <button type="submit" class="primary-button">Save folder</button>
+      </div>
+    </form>
+  </div>
+  <script nonce="{{nonce}}">
+    const vscode = acquireVsCodeApi();
+    const iconOptions = [
+      { value: '', label: 'No icon' },
+      { value: '$(folder)', label: 'Folder' },
+      { value: '$(library)', label: 'Library' },
+      { value: '$(repo)', label: 'Repository' },
+      { value: '$(archive)', label: 'Archive' },
+      { value: '$(briefcase)', label: 'Briefcase' },
+      { value: '$(organization)', label: 'Organization' },
+      { value: '$(folder-opened)', label: 'Folder Open' },
+      { value: '$(settings-gear)', label: 'Settings' },
+      { value: '$(gist-new)', label: 'New' },
+      { value: '$(add)', label: 'Add' },
+      { value: '$(trash)', label: 'Trash' },
+      { value: '$(star)', label: 'Star' },
+      { value: '$(heart)', label: 'Heart' },
+      { value: '$(tag)', label: 'Tag' },
+      { value: '$(bookmark)', label: 'Bookmark' },
+      { value: '$(sync)', label: 'Sync' },
+      { value: '$(refresh)', label: 'Refresh' }
+    ];
 
-      let currentFolder = null;
+    let currentFolder = null;
 
-      const elements = {
-        title: document.getElementById('title'),
-        form: document.getElementById('folder-form'),
-        name: document.getElementById('folder-name'),
-        icon: document.getElementById('folder-icon'),
-        iconTrigger: document.getElementById('folder-icon-trigger'),
-        iconTriggerSymbol: document.getElementById('icon-trigger-symbol'),
-        iconTriggerText: document.getElementById('icon-trigger-text'),
-        iconDropdown: document.getElementById('icon-dropdown'),
-        cancel: document.getElementById('cancel'),
-        iconPreview: document.getElementById('icon-preview'),
-        iconSymbol: document.getElementById('icon-preview-symbol'),
-        iconText: document.getElementById('icon-preview-text')
-      };
+    const elements = {
+      title: document.getElementById('title'),
+      form: document.getElementById('folder-form'),
+      name: document.getElementById('folder-name'),
+      icon: document.getElementById('folder-icon'),
+      iconTrigger: document.getElementById('folder-icon-trigger'),
+      iconTriggerSymbol: document.getElementById('icon-trigger-symbol'),
+      iconTriggerText: document.getElementById('icon-trigger-text'),
+      iconDropdown: document.getElementById('icon-dropdown'),
+      cancel: document.getElementById('cancel'),
+      iconPreview: document.getElementById('icon-preview'),
+      iconSymbol: document.getElementById('icon-preview-symbol'),
+      iconText: document.getElementById('icon-preview-text')
+    };
 
-      function populateIconSelect() {
-        // Populate hidden select for form consistency
-        elements.icon.innerHTML = '';
-        iconOptions.forEach(option => {
-          const opt = document.createElement('option');
-          opt.value = option.value;
-          opt.textContent = option.label;
-          elements.icon.appendChild(opt);
-        });
-        // Build custom dropdown
-        renderIconDropdownItems();
-        updateIconTrigger();
-      }
-
-      function updateIconPreview() {
-        const value = elements.icon.value;
-        if (!value) {
-          elements.iconPreview.style.display = 'none';
-          return;
-        }
-        const iconName = value.replace('$(', '').replace(')', '');
-        const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
-        elements.iconPreview.style.display = 'inline-flex';
-        elements.iconSymbol.className = `codicon codicon-${iconName}`;
-        elements.iconText.textContent = label;
-      }
-
-      function updateIconTrigger() {
-        const value = elements.icon.value;
-        if (!value) {
-          elements.iconTriggerSymbol.style.display = 'none';
-          elements.iconTriggerSymbol.className = 'codicon';
-          elements.iconTriggerText.textContent = 'No icon';
-          return;
-        }
-        const iconName = value.replace('$(', '').replace(')', '');
-        const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
-        elements.iconTriggerSymbol.style.display = 'inline-block';
-        elements.iconTriggerSymbol.className = `codicon codicon-${iconName}`;
-        elements.iconTriggerText.textContent = label;
-      }
-
-      function renderIconDropdownItems() {
-        elements.iconDropdown.innerHTML = '';
-        iconOptions.forEach(option => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          const iconName = option.value ? option.value.replace('$(', '').replace(')', '') : '';
-          button.innerHTML = option.value
-            ? `<span class="codicon codicon-${iconName}"></span><span>${option.label}</span>`
-            : `<span>${option.label}</span>`;
-          button.addEventListener('click', () => {
-            setIconValue(option.value);
-            hideIconDropdown();
-          });
-          elements.iconDropdown.appendChild(button);
-        });
-      }
-
-      function showIconDropdown() {
-        elements.iconDropdown.style.display = 'block';
-      }
-
-      function hideIconDropdown() {
-        elements.iconDropdown.style.display = 'none';
-      }
-
-      function setIconValue(value) {
-        elements.icon.value = value;
-        updateIconTrigger();
-        updateIconPreview();
-      }
-
-      function populateForm(folder) {
-        currentFolder = folder || null;
-        elements.title.textContent = folder ? `Edit ${folder.name}` : 'New folder';
-        elements.name.value = folder?.name || '';
-        elements.icon.value = folder?.icon || '';
-        updateIconTrigger();
-        updateIconPreview();
-      }
-
-      function collectFolder() {
-        return {
-          name: elements.name.value.trim(),
-          icon: elements.icon.value || undefined,
-          commands: currentFolder?.commands || [],
-          subfolders: currentFolder?.subfolders || []
-        };
-      }
-
-      function handleSubmit(event) {
-        event.preventDefault();
-        const folder = collectFolder();
-        if (!folder.name) {
-          return;
-        }
-        vscode.postMessage({ type: 'saveFolder', folder, context: window.currentContext });
-      }
-
-      function handleCancel() {
-        vscode.postMessage({ type: 'cancel' });
-      }
-
-      function handleMessage(event) {
-        const message = event.data;
-        if (message.type === 'init') {
-          window.currentContext = message.context || null;
-          populateForm(message.folder || null);
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        populateIconSelect();
-        elements.form.addEventListener('submit', handleSubmit);
-        elements.cancel.addEventListener('click', handleCancel);
-        elements.icon.addEventListener('change', () => { updateIconTrigger(); updateIconPreview(); });
-        elements.iconTrigger.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (elements.iconDropdown.style.display === 'block') {
-            hideIconDropdown();
-          } else {
-            showIconDropdown();
-          }
-        });
-        document.addEventListener('click', (event) => {
-          if (!elements.iconDropdown.contains(event.target) && event.target !== elements.iconTrigger) {
-            hideIconDropdown();
-          }
-        });
-        vscode.postMessage({ type: 'ready' });
+    function populateIconSelect() {
+      // Populate hidden select for form consistency
+      elements.icon.innerHTML = '';
+      iconOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        elements.icon.appendChild(opt);
       });
+      // Build custom dropdown
+      renderIconDropdownItems();
+      updateIconTrigger();
+    }
 
-      window.addEventListener('message', handleMessage);
-    </script>
-  </body>
+    function updateIconPreview() {
+      const value = elements.icon.value;
+      if (!value) {
+        elements.iconPreview.style.display = 'none';
+        return;
+      }
+      const iconName = value.replace('$(', '').replace(')', '');
+      const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
+      elements.iconPreview.style.display = 'inline-flex';
+      elements.iconSymbol.className = `codicon codicon-${iconName}`;
+      elements.iconText.textContent = label;
+    }
+
+    function updateIconTrigger() {
+      const value = elements.icon.value;
+      if (!value) {
+        elements.iconTriggerSymbol.style.display = 'none';
+        elements.iconTriggerSymbol.className = 'codicon';
+        elements.iconTriggerText.textContent = 'No icon';
+        return;
+      }
+      const iconName = value.replace('$(', '').replace(')', '');
+      const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
+      elements.iconTriggerSymbol.style.display = 'inline-block';
+      elements.iconTriggerSymbol.className = `codicon codicon-${iconName}`;
+      elements.iconTriggerText.textContent = label;
+    }
+
+    function renderIconDropdownItems() {
+      elements.iconDropdown.innerHTML = '';
+      iconOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        const iconName = option.value ? option.value.replace('$(', '').replace(')', '') : '';
+        button.innerHTML = option.value
+          ? `<span class="codicon codicon-${iconName}"></span><span>${option.label}</span>`
+          : `<span>${option.label}</span>`;
+        button.addEventListener('click', () => {
+          setIconValue(option.value);
+          hideIconDropdown();
+        });
+        elements.iconDropdown.appendChild(button);
+      });
+    }
+
+    function showIconDropdown() {
+      elements.iconDropdown.style.display = 'block';
+    }
+
+    function hideIconDropdown() {
+      elements.iconDropdown.style.display = 'none';
+    }
+
+    function setIconValue(value) {
+      elements.icon.value = value;
+      updateIconTrigger();
+      updateIconPreview();
+    }
+
+    function populateForm(folder) {
+      currentFolder = folder || null;
+      elements.title.textContent = folder ? `Edit ${folder.name}` : 'New folder';
+      elements.name.value = folder?.name || '';
+      elements.icon.value = folder?.icon || '';
+      updateIconTrigger();
+      updateIconPreview();
+    }
+
+    function collectFolder() {
+      return {
+        name: elements.name.value.trim(),
+        icon: elements.icon.value || undefined,
+        commands: currentFolder?.commands || [],
+        subfolders: currentFolder?.subfolders || []
+      };
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      const folder = collectFolder();
+      if (!folder.name) {
+        return;
+      }
+      vscode.postMessage({ type: 'saveFolder', folder, context: window.currentContext });
+    }
+
+    function handleCancel() {
+      vscode.postMessage({ type: 'cancel' });
+    }
+
+    function handleMessage(event) {
+      const message = event.data;
+      if (message.type === 'init') {
+        window.currentContext = message.context || null;
+        populateForm(message.folder || null);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateIconSelect();
+      elements.form.addEventListener('submit', handleSubmit);
+      elements.cancel.addEventListener('click', handleCancel);
+      elements.icon.addEventListener('change', () => { updateIconTrigger(); updateIconPreview(); });
+      elements.iconTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (elements.iconDropdown.style.display === 'block') {
+          hideIconDropdown();
+        } else {
+          showIconDropdown();
+        }
+      });
+      document.addEventListener('click', (event) => {
+        if (!elements.iconDropdown.contains(event.target) && event.target !== elements.iconTrigger) {
+          hideIconDropdown();
+        }
+      });
+      vscode.postMessage({ type: 'ready' });
+    });
+
+    window.addEventListener('message', handleMessage);
+  </script>
+</body>
+
 </html>

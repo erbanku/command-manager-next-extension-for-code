@@ -1,633 +1,687 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'nonce-{{nonce}}'; font-src https://cdn.jsdelivr.net; img-src {{cspSource}} data:;" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.css" />
-    <title>Command Editor</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: var(--vscode-font-family);
-        color: var(--vscode-foreground);
-        background: var(--vscode-editor-background);
-      }
-      .container {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      h1 {
-        margin: 0;
-        font-size: 16px;
-      }
-      .section {
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 6px;
-        background: var(--vscode-editor-background);
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .section-title {
-        margin: 0;
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-      }
-      .field label {
-        display: block;
-        font-size: 11px;
-        color: var(--vscode-descriptionForeground);
-        margin-bottom: 2px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .field input,
-      .field select,
-      .field textarea {
-        width:  calc(100% - 15px);
-        padding: 6px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        font-size: 12px;
-      }
-      textarea {
-        font-family: var(--vscode-editor-font-family, monospace);
-        min-height: 40px;
-        resize: vertical;
-      }
-      .command-preview {
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 4px;
-        padding: 8px;
-        background: var(--vscode-editor-background);
-        font-family: var(--vscode-editor-font-family, monospace);
-        font-size: 12px;
-        min-height: 40px;
-        white-space: pre-wrap;
-        line-height: 1.4;
-      }
-      .variable-tag {
-        color: var(--vscode-textLink-foreground);
-        text-decoration: underline;
-        cursor: pointer;
-      }
-      .variable-tag--missing {
-        color: var(--vscode-errorForeground);
-        text-decoration: underline dotted;
-      }
-      .variable-tag--input {
-        color: #4CAF50;
-        text-decoration: underline;
-      }
-      .variables-table {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .variables-header {
-        display: grid;
-        grid-template-columns: 15% 15% 15% 50% 3%;
-        gap: 6px;
-        margin-bottom: 4px;
-      }
-      .variable-row {
-        display: grid;
-        grid-template-columns: 15% 15% 15% 50% 3%;
-        gap: 6px;
-        align-items: start;
-      }
-      .variable-row input,
-      .variable-row select,
-      .variable-row textarea {
-        padding: 4px 6px;
-        font-size: 11px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-      }
-      .variable-row textarea {
-        min-height: 60px;
-        resize: vertical;
-        font-family: var(--vscode-editor-font-family, monospace);
-      }
-      .variables-table .header {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: var(--vscode-descriptionForeground);
-        margin-bottom: 4px;
-      }
-      .variables-table .remove {
-        background: transparent;
-        border: none;
-        color: var(--vscode-errorForeground);
-        cursor: pointer;
-        padding: 0;
-        margin-top: 4px;
-      }
-      .variable-help {
-        font-size: 10px;
-        color: var(--vscode-descriptionForeground);
-        margin-top: 2px;
-        font-style: italic;
-      }
-      .variable-key-display {
-        padding: 4px 6px;
-        font-size: 11px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        font-family: var(--vscode-editor-font-family, monospace);
-        cursor: pointer;
-        user-select: all;
-      }
-      .variable-key-display:hover {
-        background: var(--vscode-input-hoverBackground);
-      }
-      .actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-      .primary-button,
-      .secondary-button {
-        border: none;
-        border-radius: 4px;
-        padding: 5px 14px;
-        cursor: pointer;
-        font-size: 12px;
-      }
-      .primary-button {
-        background: var(--vscode-button-background);
-        color: var(--vscode-button-foreground);
-      }
-      .primary-button:hover {
-        background: var(--vscode-button-hoverBackground);
-      }
-      .secondary-button {
-        background: transparent;
-        color: var(--vscode-button-foreground);
-        border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
-      }
-      .icon-preview {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        color: var(--vscode-descriptionForeground);
-      }
-      .icon-preview .codicon {
-        font-size: 16px;
-      }
-      .icon-select-container {
-        position: relative;
-        width: 100%;
-      }
-      .icon-select-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 4px;
-        background: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .icon-dropdown {
-        position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
-        right: 0;
-        max-height: 260px;
-        overflow-y: auto;
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 6px;
-        background: var(--vscode-editor-background);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        display: none;
-        z-index: 1000;
-        padding: 6px;
-      }
-      .icon-dropdown button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        padding: 10px 12px;
-        border: none;
-        background: transparent;
-        color: inherit;
-        cursor: pointer;
-        text-align: left;
-        font-size: 13px;
-        border-radius: 6px;
-        margin: 4px 0;
-        transition: background-color 0.08s ease, transform 0.08s ease;
-      }
-      .icon-dropdown button:hover {
-        background: var(--vscode-list-hoverBackground);
-        transform: translateY(-1px);
-      }
-      .checkbox-row {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .checkbox-row label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin: 0;
-        text-transform: none;
-        font-size: 12px;
-        letter-spacing: normal;
-      }
-      .variable-dropdown {
-        position: fixed;
-        top: 0;
-        left: 0;
-        min-width: 300px;
-        width: auto;
-        max-width: 700px;
-        max-height: 400px;
-        overflow-y: auto;
-        border: 1px solid var(--vscode-panel-border);
-        border-radius: 6px;
-        background: var(--vscode-editor-background);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        display: none;
-        z-index: 9999;
-        pointer-events: auto;
-        padding: 6px;
-      }
-      .variable-dropdown button {
-        display: flex;
-        width: 100%;
-        padding: 10px 12px;
-        border: none;
-        background: transparent;
-        color: inherit;
-        cursor: pointer;
-        text-align: left;
-        border-radius: 6px;
-        margin: 4px 0;
-        font-size: 13px;
-        transition: background-color 0.08s ease, transform 0.08s ease;
-      }
-      .variable-dropdown button:hover {
-        background: var(--vscode-list-hoverBackground);
-        transform: translateY(-1px);
-      }
-      .variable-dropdown .type {
-        font-size: 11px;
-        color: var(--vscode-descriptionForeground);
-      }
-      .help-text {
-        font-size: 10px;
-        color: var(--vscode-descriptionForeground);
-        margin-left: 4px;
-        /* break text into multiple lines */
-        word-break: break-word;
-        text-transform: none;
-      }
-      .variable-value {
-        width: calc(100% - 20px);
-      }
-      .variable-value textarea {
-        width: calc(100% - 20px);
-        min-height: 40px;
-        resize: vertical;
-        font-family: var(--vscode-editor-font-family, monospace);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1 id="editor-title">Command</h1>
-      <form id="command-form" class="section">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'nonce-{{nonce}}'; font-src https://cdn.jsdelivr.net; img-src {{cspSource}} data:;" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.36/dist/codicon.css" />
+  <title>Command Editor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: var(--vscode-font-family);
+      color: var(--vscode-foreground);
+      background: var(--vscode-editor-background);
+    }
+
+    .container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .section {
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      background: var(--vscode-sideBar-background);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: calc(100% - 15px);
+      padding: 6px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-size: 12px;
+    }
+
+    textarea {
+      font-family: var(--vscode-editor-font-family, monospace);
+      min-height: 40px;
+      resize: vertical;
+    }
+
+    .command-preview {
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 4px;
+      padding: 8px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 12px;
+      min-height: 40px;
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+
+    .variable-tag {
+      color: var(--vscode-textLink-foreground);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .variable-tag--missing {
+      color: var(--vscode-errorForeground);
+      text-decoration: underline dotted;
+    }
+
+    .variable-tag--input {
+      color: #4CAF50;
+      text-decoration: underline;
+    }
+
+    .variables-table {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .variables-header {
+      display: grid;
+      grid-template-columns: 15% 15% 15% 50% 3%;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .variable-row {
+      display: grid;
+      grid-template-columns: 15% 15% 15% 50% 3%;
+      gap: 6px;
+      align-items: start;
+    }
+
+    .variable-row input,
+    .variable-row select,
+    .variable-row textarea {
+      padding: 4px 6px;
+      font-size: 11px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+    }
+
+    .variable-row textarea {
+      min-height: 60px;
+      resize: vertical;
+      font-family: var(--vscode-editor-font-family, monospace);
+    }
+
+    .variables-table .header {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--vscode-descriptionForeground);
+      margin-bottom: 4px;
+    }
+
+    .variables-table .remove {
+      background: transparent;
+      border: none;
+      color: var(--vscode-errorForeground);
+      cursor: pointer;
+      padding: 0;
+      margin-top: 4px;
+    }
+
+    .variable-help {
+      font-size: 10px;
+      color: var(--vscode-descriptionForeground);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    .variable-key-display {
+      padding: 4px 6px;
+      font-size: 11px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-family: var(--vscode-editor-font-family, monospace);
+      cursor: pointer;
+      user-select: all;
+    }
+
+    .variable-key-display:hover {
+      background: var(--vscode-input-hoverBackground);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .primary-button,
+    .secondary-button {
+      border: none;
+      border-radius: 4px;
+      padding: 5px 14px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .primary-button {
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+    }
+
+    .primary-button:hover {
+      background: var(--vscode-button-hoverBackground);
+    }
+
+    .secondary-button {
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
+      border: 1px solid var(--vscode-button-border, var(--vscode-button-background));
+    }
+
+    .secondary-button:hover {
+      background: var(--vscode-button-secondaryHoverBackground);
+    }
+
+    .icon-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground);
+    }
+
+    .icon-preview .codicon {
+      font-size: 16px;
+    }
+
+    .icon-select-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .icon-select-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .icon-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      background: var(--vscode-dropdown-background);
+      color: var(--vscode-dropdown-foreground);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+      padding: 6px;
+    }
+
+    .icon-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--vscode-dropdown-foreground);
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      border-radius: 6px;
+      margin: 4px 0;
+      transition: background-color 0.08s ease, transform 0.08s ease;
+    }
+
+    .icon-dropdown button:hover {
+      background: var(--vscode-list-hoverBackground);
+      transform: translateY(-1px);
+    }
+
+    .checkbox-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .checkbox-row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      text-transform: none;
+      font-size: 12px;
+      letter-spacing: normal;
+    }
+
+    .variable-dropdown {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 300px;
+      width: auto;
+      max-width: 700px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      background: var(--vscode-dropdown-background);
+      color: var(--vscode-dropdown-foreground);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 9999;
+      pointer-events: auto;
+      padding: 6px;
+    }
+
+    .variable-dropdown button {
+      display: flex;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--vscode-dropdown-foreground);
+      cursor: pointer;
+      text-align: left;
+      border-radius: 6px;
+      margin: 4px 0;
+      font-size: 13px;
+      transition: background-color 0.08s ease, transform 0.08s ease;
+    }
+
+    .variable-dropdown button:hover {
+      background: var(--vscode-list-hoverBackground);
+      transform: translateY(-1px);
+    }
+
+    .variable-dropdown .type {
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
+    }
+
+    .help-text {
+      font-size: 10px;
+      color: var(--vscode-descriptionForeground);
+      margin-left: 4px;
+      /* break text into multiple lines */
+      word-break: break-word;
+      text-transform: none;
+    }
+
+    .variable-value {
+      width: calc(100% - 20px);
+    }
+
+    .variable-value textarea {
+      width: calc(100% - 20px);
+      min-height: 40px;
+      resize: vertical;
+      font-family: var(--vscode-editor-font-family, monospace);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 id="editor-title">Command</h1>
+    <form id="command-form" class="section">
+      <div class="grid">
+        <div class="field">
+          <label for="command-label">Label</label>
+          <input id="command-label" type="text" required placeholder="Friendly name" />
+        </div>
+        <div class="field">
+          <label for="command-id">Identifier</label>
+          <input id="command-id" type="text" required placeholder="unique-id" />
+        </div>
+        <div class="field">
+          <label for="command-icon">Icon</label>
+          <div class="icon-select-container">
+            <button type="button" id="command-icon-trigger" class="icon-select-trigger">
+              <span class="codicon" id="command-icon-trigger-symbol" style="display: none;"></span>
+              <span id="command-icon-trigger-text">No icon</span>
+            </button>
+            <div class="icon-dropdown" id="command-icon-dropdown"></div>
+          </div>
+          <select id="command-icon" style="display: none;"></select>
+
+        </div>
+        <div class="field">
+          <label for="command-description">Description</label>
+          <input id="command-description" type="text" placeholder="Optional description" />
+        </div>
+      </div>
+      <div class="field" style="position: relative;">
+        <label for="command-command">Command <span class="help-text">Use $VARIABLE to insert variables. A list variable
+            will ask an input from the user.</span></label>
+        <textarea id="command-command" placeholder="Type the command. Use $VARIABLE to insert placeholders."></textarea>
+        <div id="variable-dropdown" class="variable-dropdown"></div>
+      </div>
+      <div class="command-preview" id="command-preview"></div>
+      <div class="section" style="margin: 0;">
+        <h2 class="section-title">Terminal</h2>
         <div class="grid">
           <div class="field">
-            <label for="command-label">Label</label>
-            <input id="command-label" type="text" required placeholder="Friendly name" />
+            <label for="terminal-type">Type</label>
+            <select id="terminal-type">
+              <option value="vscode-current">VS Code - Current terminal</option>
+              <option value="vscode-new">VS Code - Dedicated terminal</option>
+              <option value="external-cmd">External Command Prompt</option>
+              <option value="external-powershell">External PowerShell</option>
+            </select>
           </div>
           <div class="field">
-            <label for="command-id">Identifier</label>
-            <input id="command-id" type="text" required placeholder="unique-id" />
+            <label for="terminal-name">Terminal name</label>
+            <input id="terminal-name" type="text" placeholder="Optional terminal name" />
           </div>
           <div class="field">
-            <label for="command-icon">Icon</label>
-            <div class="icon-select-container">
-              <button type="button" id="command-icon-trigger" class="icon-select-trigger">
-                <span class="codicon" id="command-icon-trigger-symbol" style="display: none;"></span>
-                <span id="command-icon-trigger-text">No icon</span>
-              </button>
-              <div class="icon-dropdown" id="command-icon-dropdown"></div>
-            </div>
-            <select id="command-icon" style="display: none;"></select>
+            <label for="terminal-cwd">Working directory</label>
+            <input id="terminal-cwd" type="text" placeholder="Optional path" />
+          </div>
+        </div>
+      </div>
+      <div class="section" style="margin: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h2 class="section-title">Variables</h2>
+          <button id="add-variable" type="button" class="secondary-button">Add variable</button>
+        </div>
+        <div class="variables-header" id="variables-header">
+          <div class="header">Type</div>
+          <div class="header">Label</div>
+          <div class="header">Key</div>
+          <div class="header">Value</div>
+          <div></div>
+        </div>
+        <div class="variables-table" id="variables-container"></div>
+      </div>
+      <div class="actions">
+        <button type="button" id="cancel-button" class="secondary-button">Cancel</button>
+        <button type="submit" class="primary-button">Save command</button>
+      </div>
+    </form>
+  </div>
+  <script nonce="{{nonce}}">
+    const vscode = acquireVsCodeApi();
+    let currentCommand = null;
+    let currentContext = null;
+    let availableVariables = [];
+    let dropdownAnchor = 0;
+    let lastTypedDollarIndex = -1;
 
-          </div>
-          <div class="field">
-            <label for="command-description">Description</label>
-            <input id="command-description" type="text" placeholder="Optional description" />
-          </div>
-        </div>
-        <div class="field" style="position: relative;">
-          <label for="command-command">Command <span class="help-text">Use $VARIABLE to insert variables. A list variable will ask an input from the user.</span></label>
-          <textarea id="command-command" placeholder="Type the command. Use $VARIABLE to insert placeholders."></textarea>
-          <div id="variable-dropdown" class="variable-dropdown"></div>
-        </div>
-        <div class="command-preview" id="command-preview"></div>
-        <div class="section" style="margin: 0;">
-          <h2 class="section-title">Terminal</h2>
-          <div class="grid">
-            <div class="field">
-              <label for="terminal-type">Type</label>
-              <select id="terminal-type">
-                <option value="vscode-current">VS Code - Current terminal</option>
-                <option value="vscode-new">VS Code - Dedicated terminal</option>
-                <option value="external-cmd">External Command Prompt</option>
-                <option value="external-powershell">External PowerShell</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="terminal-name">Terminal name</label>
-              <input id="terminal-name" type="text" placeholder="Optional terminal name" />
-            </div>
-            <div class="field">
-              <label for="terminal-cwd">Working directory</label>
-              <input id="terminal-cwd" type="text" placeholder="Optional path" />
-            </div>
-          </div>
-        </div>
-        <div class="section" style="margin: 0;">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h2 class="section-title">Variables</h2>
-            <button id="add-variable" type="button" class="secondary-button">Add variable</button>
-          </div>
-          <div class="variables-header" id="variables-header">
-            <div class="header">Type</div>
-            <div class="header">Label</div>
-            <div class="header">Key</div>
-            <div class="header">Value</div>
-            <div></div>
-          </div>
-          <div class="variables-table" id="variables-container"></div>
-        </div>
-        <div class="actions">
-          <button type="button" id="cancel-button" class="secondary-button">Cancel</button>
-          <button type="submit" class="primary-button">Save command</button>
-        </div>
-      </form>
-    </div>
-    <script nonce="{{nonce}}">
-      const vscode = acquireVsCodeApi();
-      let currentCommand = null;
-      let currentContext = null;
-      let availableVariables = [];
-      let dropdownAnchor = 0;
-      let lastTypedDollarIndex = -1;
+    const iconOptions = [
+      { value: '', label: 'No icon' },
+      { value: '$(play)', label: 'Play' },
+      { value: '$(beaker)', label: 'Beaker' },
+      { value: '$(terminal)', label: 'Terminal' },
+      { value: '$(rocket)', label: 'Rocket' },
+      { value: '$(zap)', label: 'Zap' },
+      { value: '$(repo-push)', label: 'Push' },
+      { value: '$(tools)', label: 'Tools' },
+      { value: '$(gear)', label: 'Settings' },
+      { value: '$(database)', label: 'Database' },
+      { value: '$(debug)', label: 'Debug' },
+      { value: '$(triangle-right)', label: 'Run' },
+      { value: '$(watch)', label: 'Watch' },
+      { value: '$(search)', label: 'Search' },
+      { value: '$(cloud)', label: 'Cloud' },
+      { value: '$(cloud-upload)', label: 'Cloud Upload' },
+      { value: '$(cloud-download)', label: 'Cloud Download' },
+      { value: '$(sync)', label: 'Sync' },
+      { value: '$(refresh)', label: 'Refresh' },
+      { value: '$(git-branch)', label: 'Git Branch' },
+      { value: '$(git-merge)', label: 'Git Merge' },
+      { value: '$(bug)', label: 'Bug' },
+      { value: '$(check)', label: 'Check' },
+      { value: '$(x)', label: 'Close' },
+      { value: '$(warning)', label: 'Warning' },
+      { value: '$(shield)', label: 'Shield' },
+      { value: '$(lock)', label: 'Lock' },
+      { value: '$(unlock)', label: 'Unlock' },
+      { value: '$(key)', label: 'Key' },
+      { value: '$(pencil)', label: 'Edit' },
+      { value: '$(add)', label: 'Add' },
+      { value: '$(remove)', label: 'Remove' },
+      { value: '$(trash)', label: 'Trash' }
+    ];
 
-      const iconOptions = [
-        { value: '', label: 'No icon' },
-        { value: '$(play)', label: 'Play' },
-        { value: '$(beaker)', label: 'Beaker' },
-        { value: '$(terminal)', label: 'Terminal' },
-        { value: '$(rocket)', label: 'Rocket' },
-        { value: '$(zap)', label: 'Zap' },
-        { value: '$(repo-push)', label: 'Push' },
-        { value: '$(tools)', label: 'Tools' },
-        { value: '$(gear)', label: 'Settings' },
-        { value: '$(database)', label: 'Database' },
-        { value: '$(debug)', label: 'Debug' },
-        { value: '$(triangle-right)', label: 'Run' },
-        { value: '$(watch)', label: 'Watch' },
-        { value: '$(search)', label: 'Search' },
-        { value: '$(cloud)', label: 'Cloud' },
-        { value: '$(cloud-upload)', label: 'Cloud Upload' },
-        { value: '$(cloud-download)', label: 'Cloud Download' },
-        { value: '$(sync)', label: 'Sync' },
-        { value: '$(refresh)', label: 'Refresh' },
-        { value: '$(git-branch)', label: 'Git Branch' },
-        { value: '$(git-merge)', label: 'Git Merge' },
-        { value: '$(bug)', label: 'Bug' },
-        { value: '$(check)', label: 'Check' },
-        { value: '$(x)', label: 'Close' },
-        { value: '$(warning)', label: 'Warning' },
-        { value: '$(shield)', label: 'Shield' },
-        { value: '$(lock)', label: 'Lock' },
-        { value: '$(unlock)', label: 'Unlock' },
-        { value: '$(key)', label: 'Key' },
-        { value: '$(pencil)', label: 'Edit' },
-        { value: '$(add)', label: 'Add' },
-        { value: '$(remove)', label: 'Remove' },
-        { value: '$(trash)', label: 'Trash' }
-      ];
+    const elements = {
+      title: document.getElementById('editor-title'),
+      label: document.getElementById('command-label'),
+      id: document.getElementById('command-id'),
+      icon: document.getElementById('command-icon'),
+      iconTrigger: document.getElementById('command-icon-trigger'),
+      iconTriggerSymbol: document.getElementById('command-icon-trigger-symbol'),
+      iconTriggerText: document.getElementById('command-icon-trigger-text'),
+      iconDropdown: document.getElementById('command-icon-dropdown'),
+      iconPreview: document.getElementById('icon-preview'),
+      iconSymbol: document.getElementById('icon-preview-symbol'),
+      iconText: document.getElementById('icon-preview-text'),
+      description: document.getElementById('command-description'),
+      command: document.getElementById('command-command'),
+      preview: document.getElementById('command-preview'),
+      dropdown: document.getElementById('variable-dropdown'),
+      terminalType: document.getElementById('terminal-type'),
+      terminalName: document.getElementById('terminal-name'),
+      terminalCwd: document.getElementById('terminal-cwd'),
+      variablesContainer: document.getElementById('variables-container'),
+      form: document.getElementById('command-form'),
+      cancel: document.getElementById('cancel-button'),
+      addVariable: document.getElementById('add-variable')
+    };
 
-      const elements = {
-        title: document.getElementById('editor-title'),
-        label: document.getElementById('command-label'),
-        id: document.getElementById('command-id'),
-        icon: document.getElementById('command-icon'),
-        iconTrigger: document.getElementById('command-icon-trigger'),
-        iconTriggerSymbol: document.getElementById('command-icon-trigger-symbol'),
-        iconTriggerText: document.getElementById('command-icon-trigger-text'),
-        iconDropdown: document.getElementById('command-icon-dropdown'),
-        iconPreview: document.getElementById('icon-preview'),
-        iconSymbol: document.getElementById('icon-preview-symbol'),
-        iconText: document.getElementById('icon-preview-text'),
-        description: document.getElementById('command-description'),
-        command: document.getElementById('command-command'),
-        preview: document.getElementById('command-preview'),
-        dropdown: document.getElementById('variable-dropdown'),
-        terminalType: document.getElementById('terminal-type'),
-        terminalName: document.getElementById('terminal-name'),
-        terminalCwd: document.getElementById('terminal-cwd'),
-        variablesContainer: document.getElementById('variables-container'),
-        form: document.getElementById('command-form'),
-        cancel: document.getElementById('cancel-button'),
-        addVariable: document.getElementById('add-variable')
-      };
+    function populateIconSelect() {
+      elements.icon.innerHTML = '';
+      iconOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.label;
+        elements.icon.appendChild(opt);
+      });
+      renderIconDropdownItems();
+      updateIconTrigger();
+    }
 
-      function populateIconSelect() {
-        elements.icon.innerHTML = '';
-        iconOptions.forEach(option => {
-          const opt = document.createElement('option');
-          opt.value = option.value;
-          opt.textContent = option.label;
-          elements.icon.appendChild(opt);
+    function updateIconPreview() {
+      if (!elements.iconPreview || !elements.iconSymbol || !elements.iconText || !elements.icon) {
+        return;
+      }
+      const value = elements.icon.value || '';
+      if (!value) {
+        elements.iconPreview.style.display = 'none';
+        elements.iconSymbol.textContent = '';
+        elements.iconText.textContent = '';
+        return;
+      }
+      const iconName = value.replace('$(', '').replace(')', '');
+      elements.iconPreview.style.display = 'inline-flex';
+      elements.iconSymbol.className = `codicon codicon-${iconName}`;
+      const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
+      elements.iconText.textContent = label;
+    }
+
+    function updateIconTrigger() {
+      if (!elements.iconTrigger || !elements.iconTriggerSymbol || !elements.iconTriggerText || !elements.icon) {
+        return;
+      }
+      const value = elements.icon.value || '';
+      if (!value) {
+        elements.iconTriggerSymbol.style.display = 'none';
+        elements.iconTriggerSymbol.className = 'codicon';
+        elements.iconTriggerText.textContent = 'No icon';
+        return;
+      }
+      const iconName = value.replace('$(', '').replace(')', '');
+      const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
+      elements.iconTriggerSymbol.style.display = 'inline-block';
+      elements.iconTriggerSymbol.className = `codicon codicon-${iconName}`;
+      elements.iconTriggerText.textContent = label;
+    }
+
+    function renderIconDropdownItems() {
+      elements.iconDropdown.innerHTML = '';
+      iconOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        const iconName = option.value ? option.value.replace('$(', '').replace(')', '') : '';
+        button.innerHTML = option.value
+          ? `<span class=\"codicon codicon-${iconName}\"></span><span>${option.label}</span>`
+          : `<span>${option.label}</span>`;
+        button.addEventListener('click', () => {
+          setIconValue(option.value);
+          hideIconDropdown();
         });
-        renderIconDropdownItems();
-        updateIconTrigger();
+        elements.iconDropdown.appendChild(button);
+      });
+    }
+
+    function showIconDropdown() {
+      elements.iconDropdown.style.display = 'block';
+    }
+
+    function hideIconDropdown() {
+      elements.iconDropdown.style.display = 'none';
+    }
+
+    function setIconValue(value) {
+      elements.icon.value = value;
+      updateIconTrigger();
+      updateIconPreview();
+    }
+
+    function slugify(value) {
+      return value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    function generateUniqueKey(baseKey, existingKeys = []) {
+      if (!baseKey) return 'var';
+
+      // If base key is unique, use it
+      if (!existingKeys.includes(baseKey)) {
+        return baseKey;
       }
 
-      function updateIconPreview() {
-        if (!elements.iconPreview || !elements.iconSymbol || !elements.iconText || !elements.icon) {
-          return;
-        }
-        const value = elements.icon.value || '';
-        if (!value) {
-          elements.iconPreview.style.display = 'none';
-          elements.iconSymbol.textContent = '';
-          elements.iconText.textContent = '';
-          return;
-        }
-        const iconName = value.replace('$(', '').replace(')', '');
-        elements.iconPreview.style.display = 'inline-flex';
-        elements.iconSymbol.className = `codicon codicon-${iconName}`;
-        const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
-        elements.iconText.textContent = label;
+      // Find next available number
+      let counter = 1;
+      let candidateKey = `${baseKey}_${counter}`;
+      while (existingKeys.includes(candidateKey)) {
+        counter++;
+        candidateKey = `${baseKey}_${counter}`;
       }
 
-      function updateIconTrigger() {
-        if (!elements.iconTrigger || !elements.iconTriggerSymbol || !elements.iconTriggerText || !elements.icon) {
-          return;
-        }
-        const value = elements.icon.value || '';
-        if (!value) {
-          elements.iconTriggerSymbol.style.display = 'none';
-          elements.iconTriggerSymbol.className = 'codicon';
-          elements.iconTriggerText.textContent = 'No icon';
-          return;
-        }
-        const iconName = value.replace('$(', '').replace(')', '');
-        const label = iconOptions.find(opt => opt.value === value)?.label || iconName;
-        elements.iconTriggerSymbol.style.display = 'inline-block';
-        elements.iconTriggerSymbol.className = `codicon codicon-${iconName}`;
-        elements.iconTriggerText.textContent = label;
+      return candidateKey;
+    }
+
+    function handleLabelChange() {
+      const currentId = elements.id.value.trim();
+      const generated = slugify(elements.label.value);
+      if (!currentId || elements.id.dataset.generated === 'true') {
+        elements.id.value = generated;
+        elements.id.dataset.generated = 'true';
       }
+    }
 
-      function renderIconDropdownItems() {
-        elements.iconDropdown.innerHTML = '';
-        iconOptions.forEach(option => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          const iconName = option.value ? option.value.replace('$(', '').replace(')', '') : '';
-          button.innerHTML = option.value
-            ? `<span class=\"codicon codicon-${iconName}\"></span><span>${option.label}</span>`
-            : `<span>${option.label}</span>`;
-          button.addEventListener('click', () => {
-            setIconValue(option.value);
-            hideIconDropdown();
-          });
-          elements.iconDropdown.appendChild(button);
-        });
-      }
+    function handleIdInput() {
+      elements.id.dataset.generated = 'false';
+    }
+    function renderVariables(variables) {
+      elements.variablesContainer.innerHTML = '';
+      variables.forEach(variable => {
+        // Ensure the variable has the expected structure
+        const processedVariable = {
+          value: variable.value || variable.key || '',
+          label: variable.label || '',
+          type: variable.type || 'fixed'
+        };
+        addVariableRow(processedVariable);
+      });
+    }
 
-      function showIconDropdown() {
-        elements.iconDropdown.style.display = 'block';
-      }
-
-      function hideIconDropdown() {
-        elements.iconDropdown.style.display = 'none';
-      }
-
-      function setIconValue(value) {
-        elements.icon.value = value;
-        updateIconTrigger();
-        updateIconPreview();
-      }
-
-      function slugify(value) {
-        return value
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .trim()
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-');
-      }
-
-      function generateUniqueKey(baseKey, existingKeys = []) {
-        if (!baseKey) return 'var';
-        
-        // If base key is unique, use it
-        if (!existingKeys.includes(baseKey)) {
-          return baseKey;
-        }
-        
-        // Find next available number
-        let counter = 1;
-        let candidateKey = `${baseKey}_${counter}`;
-        while (existingKeys.includes(candidateKey)) {
-          counter++;
-          candidateKey = `${baseKey}_${counter}`;
-        }
-        
-        return candidateKey;
-      }
-
-      function handleLabelChange() {
-        const currentId = elements.id.value.trim();
-        const generated = slugify(elements.label.value);
-        if (!currentId || elements.id.dataset.generated === 'true') {
-          elements.id.value = generated;
-          elements.id.dataset.generated = 'true';
-        }
-      }
-
-      function handleIdInput() {
-        elements.id.dataset.generated = 'false';
-      }
-      function renderVariables(variables) {
-        elements.variablesContainer.innerHTML = '';
-        variables.forEach(variable => {
-          // Ensure the variable has the expected structure
-          const processedVariable = {
-            value: variable.value || variable.key || '',
-            label: variable.label || '',
-            type: variable.type || 'fixed'
-          };
-          addVariableRow(processedVariable);
-        });
-      }
-
-      function createValueField(type, value) {
-        if (type === 'options') {
-          return {
-            input: `<textarea class="variable-value" placeholder="production&#10;development&#10;staging" rows="3">${value || ''}</textarea>`,
-            help: '<div class="variable-help">Add one option per line</div>'
-          };
-        }
-
-        if (type === 'file') {
-          return {
-            input: `<input type="text" class="variable-value" placeholder="./relative/path" value="${value || ''}" />`,
-            help: '<div class="variable-help">Optional base directory. Relative paths use the workspace root.</div>'
-          };
-        }
-
+    function createValueField(type, value) {
+      if (type === 'options') {
         return {
-          input: `<input type="text" class="variable-value" placeholder="production" value="${value || ''}" />`,
-          help: ''
+          input: `<textarea class="variable-value" placeholder="production&#10;development&#10;staging" rows="3">${value || ''}</textarea>`,
+          help: '<div class="variable-help">Add one option per line</div>'
         };
       }
 
-      function addVariableRow(variable = { value: '', label: '', type: 'fixed' }) {
-        const row = document.createElement('div');
-        row.className = 'variables-table variable-row';
+      if (type === 'file') {
+        return {
+          input: `<input type="text" class="variable-value" placeholder="./relative/path" value="${value || ''}" />`,
+          help: '<div class="variable-help">Optional base directory. Relative paths use the workspace root.</div>'
+        };
+      }
 
-        const { input: initialValueField, help: initialHelp } = createValueField(variable.type, variable.value || '');
+      return {
+        input: `<input type="text" class="variable-value" placeholder="production" value="${value || ''}" />`,
+        help: ''
+      };
+    }
 
-        // Generate key for display
-        const baseKey = slugify(variable.label);
-        const key = variable.key || generateUniqueKey(baseKey);
+    function addVariableRow(variable = { value: '', label: '', type: 'fixed' }) {
+      const row = document.createElement('div');
+      row.className = 'variables-table variable-row';
 
-        row.innerHTML = `
+      const { input: initialValueField, help: initialHelp } = createValueField(variable.type, variable.value || '');
+
+      // Generate key for display
+      const baseKey = slugify(variable.label);
+      const key = variable.key || generateUniqueKey(baseKey);
+
+      row.innerHTML = `
           <select class="variable-type">
             <option value="fixed" ${variable.type === 'fixed' ? 'selected' : ''}>Fixed</option>
             <option value="options" ${variable.type === 'options' ? 'selected' : ''}>Options</option>
@@ -641,458 +695,459 @@
           </div>
           <button type="button" class="remove" title="Remove variable">×</button>
         `;
-        
-        // Add event listeners
-        row.querySelector('.remove').addEventListener('click', () => {
-          row.remove();
-          updatePreview();
-        });
-        
-        // Handle type change to switch between input and textarea
-        const typeSelect = row.querySelector('.variable-type');
-        const valueContainer = row.querySelector('.variable-value-container');
 
-        typeSelect.addEventListener('change', () => {
-          const currentValue = valueContainer.querySelector('.variable-value')
-            ? valueContainer.querySelector('.variable-value').value
-            : '';
-          const { input, help } = createValueField(typeSelect.value, currentValue);
-          valueContainer.innerHTML = input + (help || '');
+      // Add event listeners
+      row.querySelector('.remove').addEventListener('click', () => {
+        row.remove();
+        updatePreview();
+      });
 
-          // Re-add event listeners
-          valueContainer.querySelector('.variable-value').addEventListener('input', () => updatePreview());
-          updatePreview();
-        });
-        
-        // Update key when label changes
-        const labelInput = row.querySelector('.variable-label');
-        labelInput.addEventListener('input', () => {
-          const baseKey = slugify(labelInput.value);
-          // Get existing keys from other rows to avoid duplicates
-          const otherRows = Array.from(elements.variablesContainer.querySelectorAll('.variable-row'))
-            .filter(r => r !== row);
-          const existingKeys = otherRows.map(r => {
-            const keyDisplay = r.querySelector('.variable-key-display');
-            return keyDisplay ? keyDisplay.textContent : '';
-          });
-          const newKey = generateUniqueKey(baseKey, existingKeys);
-          const keyDisplay = row.querySelector('.variable-key-display');
-          if (keyDisplay) {
-            keyDisplay.textContent = newKey;
-          }
-          updatePreview();
-        });
-        
-        ['input', 'change'].forEach(eventName => {
-          row.querySelectorAll('input, select, textarea').forEach(el => {
-            el.addEventListener(eventName, () => updatePreview());
-          });
-        });
-        
-        elements.variablesContainer.appendChild(row);
-      }
+      // Handle type change to switch between input and textarea
+      const typeSelect = row.querySelector('.variable-type');
+      const valueContainer = row.querySelector('.variable-value-container');
 
-      function collectVariables() {
-        const rows = Array.from(elements.variablesContainer.querySelectorAll('.variable-row'));
-        
-        // First pass: collect all existing keys to avoid recursion
-        const existingKeys = [];
-        const variables = rows
-          .map((row, index) => {
-            const valueField = row.querySelector('.variable-value');
-            const value = valueField ? valueField.value.trim() : '';
-            const label = row.querySelector('.variable-label').value.trim();
-            const type = row.querySelector('.variable-type').value;
-            
-            // Generate unique key from slugified label
-            const baseKey = label ? slugify(label) : 'var';
-            const key = generateUniqueKey(baseKey, existingKeys);
-            
-            // Add this key to existing keys for next iteration
-            existingKeys.push(key);
-            
-            return {
-              key: key,
-              value: value,
-              label: label,
-              type: type
-            };
-          });
-          
-        return variables;
-      }
+      typeSelect.addEventListener('change', () => {
+        const currentValue = valueContainer.querySelector('.variable-value')
+          ? valueContainer.querySelector('.variable-value').value
+          : '';
+        const { input, help } = createValueField(typeSelect.value, currentValue);
+        valueContainer.innerHTML = input + (help || '');
 
-      function getVariableMetadata(key) {
-        // Find variable by key (what's shown in command text)
-        const commandVariable = collectVariables().find(variable => variable.key === key);
-        const globalVariable = availableVariables.find(variable => variable.key === key);
-        const type = commandVariable?.type || globalVariable?.type || 'fixed';
-        const label = commandVariable?.label || globalVariable?.label || key;
-        const parts = [`Key: ${key}`, `Type: ${type}`];
-        if (label && label !== key) {
-          parts.push(`Label: ${label}`);
+        // Re-add event listeners
+        valueContainer.querySelector('.variable-value').addEventListener('input', () => updatePreview());
+        updatePreview();
+      });
+
+      // Update key when label changes
+      const labelInput = row.querySelector('.variable-label');
+      labelInput.addEventListener('input', () => {
+        const baseKey = slugify(labelInput.value);
+        // Get existing keys from other rows to avoid duplicates
+        const otherRows = Array.from(elements.variablesContainer.querySelectorAll('.variable-row'))
+          .filter(r => r !== row);
+        const existingKeys = otherRows.map(r => {
+          const keyDisplay = r.querySelector('.variable-key-display');
+          return keyDisplay ? keyDisplay.textContent : '';
+        });
+        const newKey = generateUniqueKey(baseKey, existingKeys);
+        const keyDisplay = row.querySelector('.variable-key-display');
+        if (keyDisplay) {
+          keyDisplay.textContent = newKey;
         }
-        if (commandVariable) {
-          if (type === 'fixed') {
-            parts.push(`Value: ${commandVariable.value}`);
-          }
-          if (type === 'options') {
-            const options = commandVariable.value.split('\n').filter(opt => opt.trim());
-            parts.push(`Options: ${options.join(', ')}`);
-          }
-          if (type === 'file') {
-            parts.push(`Base directory: ${commandVariable.value || 'workspace root'}`);
-          }
-        } else if (globalVariable) {
-          if (type === 'fixed' && globalVariable.value) {
-            parts.push(`Value: ${globalVariable.value}`);
-          }
-          if (type === 'options' && Array.isArray(globalVariable.options)) {
-            parts.push(`Options: ${globalVariable.options.join(', ')}`);
-          }
-          if (type === 'file' && globalVariable.value) {
-            parts.push(`Base directory: ${globalVariable.value}`);
-          }
-          if (globalVariable.description) {
-            parts.push(globalVariable.description);
-          }
+        updatePreview();
+      });
+
+      ['input', 'change'].forEach(eventName => {
+        row.querySelectorAll('input, select, textarea').forEach(el => {
+          el.addEventListener(eventName, () => updatePreview());
+        });
+      });
+
+      elements.variablesContainer.appendChild(row);
+    }
+
+    function collectVariables() {
+      const rows = Array.from(elements.variablesContainer.querySelectorAll('.variable-row'));
+
+      // First pass: collect all existing keys to avoid recursion
+      const existingKeys = [];
+      const variables = rows
+        .map((row, index) => {
+          const valueField = row.querySelector('.variable-value');
+          const value = valueField ? valueField.value.trim() : '';
+          const label = row.querySelector('.variable-label').value.trim();
+          const type = row.querySelector('.variable-type').value;
+
+          // Generate unique key from slugified label
+          const baseKey = label ? slugify(label) : 'var';
+          const key = generateUniqueKey(baseKey, existingKeys);
+
+          // Add this key to existing keys for next iteration
+          existingKeys.push(key);
+
+          return {
+            key: key,
+            value: value,
+            label: label,
+            type: type
+          };
+        });
+
+      return variables;
+    }
+
+    function getVariableMetadata(key) {
+      // Find variable by key (what's shown in command text)
+      const commandVariable = collectVariables().find(variable => variable.key === key);
+      const globalVariable = availableVariables.find(variable => variable.key === key);
+      const type = commandVariable?.type || globalVariable?.type || 'fixed';
+      const label = commandVariable?.label || globalVariable?.label || key;
+      const parts = [`Key: ${key}`, `Type: ${type}`];
+      if (label && label !== key) {
+        parts.push(`Label: ${label}`);
+      }
+      if (commandVariable) {
+        if (type === 'fixed') {
+          parts.push(`Value: ${commandVariable.value}`);
+        }
+        if (type === 'options') {
+          const options = commandVariable.value.split('\n').filter(opt => opt.trim());
+          parts.push(`Options: ${options.join(', ')}`);
+        }
+        if (type === 'file') {
+          parts.push(`Base directory: ${commandVariable.value || 'workspace root'}`);
+        }
+      } else if (globalVariable) {
+        if (type === 'fixed' && globalVariable.value) {
+          parts.push(`Value: ${globalVariable.value}`);
+        }
+        if (type === 'options' && Array.isArray(globalVariable.options)) {
+          parts.push(`Options: ${globalVariable.options.join(', ')}`);
+        }
+        if (type === 'file' && globalVariable.value) {
+          parts.push(`Base directory: ${globalVariable.value}`);
+        }
+        if (globalVariable.description) {
+          parts.push(globalVariable.description);
+        }
+      } else {
+        parts.push('Not configured in Global Variables');
+      }
+      return {
+        label,
+        type,
+        configured: Boolean(commandVariable || globalVariable),
+        tooltip: parts.join('\n')
+      };
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function updatePreview() {
+      const text = elements.command.value || '';
+      const escaped = escapeHtml(text);
+      const highlighted = escaped.replace(/\$([A-Za-z0-9_]+)/g, (_, key) => {
+        const metadata = getVariableMetadata(key);
+        const classes = ['variable-tag'];
+
+        // Special styling for $input variable
+        if (key === 'input') {
+          classes.push('variable-tag--input');
+        } else if (!metadata.configured) {
+          classes.push('variable-tag--missing');
+        }
+
+        const title = metadata.tooltip.replace(/"/g, '&quot;');
+        return `<span class="${classes.join(' ')}" title="${title}">$${key}</span>`;
+      });
+      elements.preview.innerHTML = highlighted;
+    }
+    function showVariableDropdown() {
+      const textarea = elements.command;
+      const rect = textarea.getBoundingClientRect();
+
+      // Use the specific $ position that was just typed
+      const dollarIndex = lastTypedDollarIndex;
+      if (dollarIndex === -1) {
+        hideVariableDropdown();
+        return;
+      }
+
+      // Get text up to the $ character to count lines
+      const textUpToDollar = textarea.value.substring(0, dollarIndex + 1);
+      const lines = textUpToDollar.split('\n').length;
+
+      // Get line height from computed styles
+      const computedStyle = window.getComputedStyle(textarea);
+      const lineHeight = parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.2;
+
+      // Calculate position based on the line where the $ was typed
+      const baseOffset = 4; // 4px gap below textarea
+      const lineOffset = (lines - 1) * lineHeight; // -1 because first line doesn't add offset
+      const totalOffset = baseOffset + lineOffset;
+
+      // Calculate horizontal position based on character position within the line
+      const textBeforeDollar = textarea.value.substring(0, dollarIndex);
+      const lastNewlineIndex = textBeforeDollar.lastIndexOf('\n');
+      const charPositionInLine = dollarIndex - lastNewlineIndex - 1;
+
+      // Use fixed positioning with viewport coordinates
+      const leftPosition = (charPositionInLine * 6.5) + 8;
+      const topPosition = rect.bottom + totalOffset;
+
+      const finalLeft = leftPosition + 40;
+      const finalTop = topPosition - 80 + lines * 9;
+
+      elements.dropdown.style.left = `${finalLeft}px`;
+      elements.dropdown.style.top = `${finalTop}px`;
+      elements.dropdown.style.display = 'block';
+
+      renderDropdownItems();
+    }
+
+    function hideVariableDropdown() {
+      elements.dropdown.style.display = 'none';
+    }
+
+    function getDropdownItems() {
+      const combined = new Map();
+
+      collectVariables().forEach(variable => {
+        combined.set(variable.key, {
+          key: variable.key,
+          label: variable.label,
+          type: variable.type,
+          source: 'command'
+        });
+      });
+
+      availableVariables.forEach(variable => {
+        const existing = combined.get(variable.key);
+        if (existing) {
+          combined.set(variable.key, {
+            ...existing,
+            label: existing.label || variable.label,
+            type: existing.type || variable.type,
+            source: 'command+global',
+            description: variable.description,
+            value: variable.value,
+            options: variable.options
+          });
         } else {
-          parts.push('Not configured in Global Variables');
-        }
-        return {
-          label,
-          type,
-          configured: Boolean(commandVariable || globalVariable),
-          tooltip: parts.join('\n')
-        };
-      }
-
-      function escapeHtml(value) {
-        return value
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-      }
-
-      function updatePreview() {
-        const text = elements.command.value || '';
-        const escaped = escapeHtml(text);
-        const highlighted = escaped.replace(/\$([A-Za-z0-9_]+)/g, (_, key) => {
-          const metadata = getVariableMetadata(key);
-          const classes = ['variable-tag'];
-          
-          // Special styling for $input variable
-          if (key === 'input') {
-            classes.push('variable-tag--input');
-          } else if (!metadata.configured) {
-            classes.push('variable-tag--missing');
-          }
-          
-          const title = metadata.tooltip.replace(/"/g, '&quot;');
-          return `<span class="${classes.join(' ')}" title="${title}">$${key}</span>`;
-        });
-        elements.preview.innerHTML = highlighted;
-      }
-      function showVariableDropdown() {
-        const textarea = elements.command;
-        const rect = textarea.getBoundingClientRect();
-        
-        // Use the specific $ position that was just typed
-        const dollarIndex = lastTypedDollarIndex;
-        if (dollarIndex === -1) {
-          hideVariableDropdown();
-          return;
-        }
-        
-        // Get text up to the $ character to count lines
-        const textUpToDollar = textarea.value.substring(0, dollarIndex + 1);
-        const lines = textUpToDollar.split('\n').length;
-        
-        // Get line height from computed styles
-        const computedStyle = window.getComputedStyle(textarea);
-        const lineHeight = parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.2;
-        
-        // Calculate position based on the line where the $ was typed
-        const baseOffset = 4; // 4px gap below textarea
-        const lineOffset = (lines - 1) * lineHeight; // -1 because first line doesn't add offset
-        const totalOffset = baseOffset + lineOffset;
-        
-        // Calculate horizontal position based on character position within the line
-        const textBeforeDollar = textarea.value.substring(0, dollarIndex);
-        const lastNewlineIndex = textBeforeDollar.lastIndexOf('\n');
-        const charPositionInLine = dollarIndex - lastNewlineIndex - 1;
-        
-        // Use fixed positioning with viewport coordinates
-        const leftPosition = (charPositionInLine * 6.5) + 8;
-        const topPosition = rect.bottom + totalOffset;
-        
-        const finalLeft = leftPosition + 40;
-        const finalTop = topPosition - 80 + lines * 9;
-        
-        elements.dropdown.style.left = `${finalLeft}px`;
-        elements.dropdown.style.top = `${finalTop}px`;
-        elements.dropdown.style.display = 'block';
-        
-        renderDropdownItems();
-      }
-
-      function hideVariableDropdown() {
-        elements.dropdown.style.display = 'none';
-      }
-
-      function getDropdownItems() {
-        const combined = new Map();
-
-        collectVariables().forEach(variable => {
           combined.set(variable.key, {
             key: variable.key,
             label: variable.label,
             type: variable.type,
-            source: 'command'
+            source: 'global',
+            description: variable.description,
+            value: variable.value,
+            options: variable.options
           });
-        });
+        }
+      });
 
-        availableVariables.forEach(variable => {
-          const existing = combined.get(variable.key);
-          if (existing) {
-            combined.set(variable.key, {
-              ...existing,
-              label: existing.label || variable.label,
-              type: existing.type || variable.type,
-              source: 'command+global',
-              description: variable.description,
-              value: variable.value,
-              options: variable.options
-            });
-          } else {
-            combined.set(variable.key, {
-              key: variable.key,
-              label: variable.label,
-              type: variable.type,
-              source: 'global',
-              description: variable.description,
-              value: variable.value,
-              options: variable.options
-            });
-          }
-        });
+      return Array.from(combined.values()).sort((a, b) => a.key.localeCompare(b.key));
+    }
 
-        return Array.from(combined.values()).sort((a, b) => a.key.localeCompare(b.key));
-      }
+    function renderDropdownItems() {
+      elements.dropdown.innerHTML = '';
+      const variables = getDropdownItems();
 
-      function renderDropdownItems() {
-        elements.dropdown.innerHTML = '';
-        const variables = getDropdownItems();
-        
-        // Add Manual Input option first
-        const manualInputButton = document.createElement('button');
-        manualInputButton.type = 'button';
-        manualInputButton.innerHTML = `
+      // Add Manual Input option first
+      const manualInputButton = document.createElement('button');
+      manualInputButton.type = 'button';
+      manualInputButton.innerHTML = `
           <span style="flex:1;">$input</span>
           <span class="type">Manual Input (User Prompt)</span>
         `;
-        manualInputButton.style.backgroundColor = '#007acc';
-        manualInputButton.style.color = 'white';
-        manualInputButton.style.margin = '4px 0';
-        manualInputButton.style.borderRadius = '6px';
-        manualInputButton.style.padding = '10px 12px';
-        manualInputButton.style.fontSize = '13px';
-        manualInputButton.addEventListener('click', () => {
-          insertVariable('input');
-          hideVariableDropdown();
-        });
-        elements.dropdown.appendChild(manualInputButton);
-        
-        if (variables.length === 0) {
-          const placeholder = document.createElement('div');
-          placeholder.textContent = 'No other variables available.';
-          placeholder.style.padding = '8px';
-          placeholder.style.fontStyle = 'italic';
-          elements.dropdown.appendChild(placeholder);
-          return;
+      manualInputButton.style.backgroundColor = '#007acc';
+      manualInputButton.style.color = 'white';
+      manualInputButton.style.margin = '4px 0';
+      manualInputButton.style.borderRadius = '6px';
+      manualInputButton.style.padding = '10px 12px';
+      manualInputButton.style.fontSize = '13px';
+      manualInputButton.addEventListener('click', () => {
+        insertVariable('input');
+        hideVariableDropdown();
+      });
+      elements.dropdown.appendChild(manualInputButton);
+
+      if (variables.length === 0) {
+        const placeholder = document.createElement('div');
+        placeholder.textContent = 'No other variables available.';
+        placeholder.style.padding = '8px';
+        placeholder.style.fontStyle = 'italic';
+        elements.dropdown.appendChild(placeholder);
+        return;
+      }
+      variables.forEach(variable => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        let typeLabel = 'Fixed';
+        if (variable.type === 'options') {
+          typeLabel = 'Options';
+        } else if (variable.type === 'file') {
+          typeLabel = 'File';
         }
-        variables.forEach(variable => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          let typeLabel = 'Fixed';
-          if (variable.type === 'options') {
-            typeLabel = 'Options';
-          } else if (variable.type === 'file') {
-            typeLabel = 'File';
-          }
-          const sourceLabel = variable.source === 'global' ? 'Global' : variable.source === 'command' ? 'Command' : 'Command · Global';
-          button.innerHTML = `
+        const sourceLabel = variable.source === 'global' ? 'Global' : variable.source === 'command' ? 'Command' : 'Command · Global';
+        button.innerHTML = `
             <span style="flex:1;">$${variable.key}</span>
             <span class="type">${typeLabel}${variable.label ? ' · ' + variable.label : ''} (${sourceLabel})</span>
           `;
-          button.addEventListener('click', () => {
-            insertVariable(variable.key);
-            hideVariableDropdown();
-          });
-          elements.dropdown.appendChild(button);
+        button.addEventListener('click', () => {
+          insertVariable(variable.key);
+          hideVariableDropdown();
         });
-      }
+        elements.dropdown.appendChild(button);
+      });
+    }
 
-      function insertVariable(key) {
-        const value = elements.command.value;
-        const start = elements.command.selectionStart;
-        const before = value.slice(0, start);
-        const after = value.slice(start);
-        const hasTrailingDollar = before.endsWith('$');
-        const prefix = hasTrailingDollar ? before.slice(0, -1) : before;
-        
-        // Use the key directly in the command
-        const insertion = `$${key}`;
-        elements.command.value = `${prefix}${insertion}${after}`;
-        const cursor = prefix.length + insertion.length;
-        elements.command.focus();
-        elements.command.setSelectionRange(cursor, cursor);
-        updatePreview();
-      }
-      function populateForm(command, context) {
-        currentCommand = command || null;
-        currentContext = context || null;
-        elements.title.textContent = command ? `Edit ${command.label}` : 'New command';
-        elements.label.value = command?.label || '';
-        elements.id.value = command?.id || '';
-        elements.id.dataset.generated = command ? 'false' : 'true';
-        elements.icon.value = command?.icon || '';
-        updateIconTrigger();
-        updateIconPreview();
-        elements.description.value = command?.description || '';
-        elements.command.value = command?.command || '';
-        elements.terminalType.value = command?.terminal?.type || 'vscode-new';
-        elements.terminalName.value = command?.terminal?.name || '';
-        elements.terminalCwd.value = command?.terminal?.cwd || '';
-        renderVariables(command?.variables || []);
-        updatePreview();
-      }
+    function insertVariable(key) {
+      const value = elements.command.value;
+      const start = elements.command.selectionStart;
+      const before = value.slice(0, start);
+      const after = value.slice(start);
+      const hasTrailingDollar = before.endsWith('$');
+      const prefix = hasTrailingDollar ? before.slice(0, -1) : before;
 
-      function collectCommand() {
-        const variables = collectVariables();
-        
-        // Only include variables that have both value and label
-        const validVariables = variables.filter(variable => 
-          variable.value && variable.value.trim() && 
-          variable.label && variable.label.trim()
-        );
-        
-        // Ensure all variables have proper keys
-        const existingKeys = [];
-        const processedVariables = validVariables.map((variable, index) => {
-          const baseKey = variable.label ? slugify(variable.label) : 'var';
-          const key = variable.key || generateUniqueKey(baseKey, existingKeys);
-          existingKeys.push(key);
-          return {
-            key: key,
-            value: variable.value,
-            label: variable.label,
-            type: variable.type
-          };
-        });
-        
+      // Use the key directly in the command
+      const insertion = `$${key}`;
+      elements.command.value = `${prefix}${insertion}${after}`;
+      const cursor = prefix.length + insertion.length;
+      elements.command.focus();
+      elements.command.setSelectionRange(cursor, cursor);
+      updatePreview();
+    }
+    function populateForm(command, context) {
+      currentCommand = command || null;
+      currentContext = context || null;
+      elements.title.textContent = command ? `Edit ${command.label}` : 'New command';
+      elements.label.value = command?.label || '';
+      elements.id.value = command?.id || '';
+      elements.id.dataset.generated = command ? 'false' : 'true';
+      elements.icon.value = command?.icon || '';
+      updateIconTrigger();
+      updateIconPreview();
+      elements.description.value = command?.description || '';
+      elements.command.value = command?.command || '';
+      elements.terminalType.value = command?.terminal?.type || 'vscode-new';
+      elements.terminalName.value = command?.terminal?.name || '';
+      elements.terminalCwd.value = command?.terminal?.cwd || '';
+      renderVariables(command?.variables || []);
+      updatePreview();
+    }
+
+    function collectCommand() {
+      const variables = collectVariables();
+
+      // Only include variables that have both value and label
+      const validVariables = variables.filter(variable =>
+        variable.value && variable.value.trim() &&
+        variable.label && variable.label.trim()
+      );
+
+      // Ensure all variables have proper keys
+      const existingKeys = [];
+      const processedVariables = validVariables.map((variable, index) => {
+        const baseKey = variable.label ? slugify(variable.label) : 'var';
+        const key = variable.key || generateUniqueKey(baseKey, existingKeys);
+        existingKeys.push(key);
         return {
-          id: elements.id.value.trim(),
-          label: elements.label.value.trim(),
-          description: elements.description.value.trim() || undefined,
-          icon: elements.icon.value || undefined,
-          command: elements.command.value,
-          terminal: {
-            type: elements.terminalType.value,
-            name: elements.terminalName.value.trim() || undefined,
-            cwd: elements.terminalCwd.value.trim() || undefined
-          },
-          variables: processedVariables
+          key: key,
+          value: variable.value,
+          label: variable.label,
+          type: variable.type
         };
-      }
-
-      function handleSubmit(event) {
-        event.preventDefault();
-        const command = collectCommand();
-        if (!command.id || !command.label || !command.command) {
-          vscode.postMessage({ type: 'error', message: 'Command requires id, label and command text.' });
-          return;
-        }
-        vscode.postMessage({ type: 'saveCommand', command, context: currentContext });
-      }
-
-      function handleCancel() {
-        vscode.postMessage({ type: 'cancel' });
-      }
-
-      function handleMessage(event) {
-        const message = event.data;
-        switch (message.type) {
-          case 'init':
-            availableVariables = message.variables || [];
-            populateForm(message.command, message.context);
-            break;
-          case 'variables':
-            availableVariables = message.variables || [];
-            renderDropdownItems();
-            updatePreview();
-            break;
-        }
-      }
-      function handleCommandInput(event) {
-        const textarea = elements.command;
-        const currentValue = textarea.value;
-        const currentPos = textarea.selectionStart;
-        
-        // Check if a $ was just typed
-        if (event.inputType === 'insertText' && event.data === '$') {
-          lastTypedDollarIndex = currentPos - 1; // Position of the $ that was just typed
-          showVariableDropdown();
-        } else if (event.inputType === 'insertText' && event.data !== '$') {
-          // If other text was typed, hide dropdown
-          hideVariableDropdown();
-        } else if (elements.dropdown.style.display === 'block') {
-          // If dropdown is open and no $ was typed, hide it
-          hideVariableDropdown();
-        }
-        
-        updatePreview();
-      }
-
-      function handleCommandKeydown(event) {
-        if (event.key === 'Escape' && elements.dropdown.style.display === 'block') {
-          hideVariableDropdown();
-          event.preventDefault();
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        populateIconSelect();
-        elements.form.addEventListener('submit', handleSubmit);
-        elements.cancel.addEventListener('click', handleCancel);
-        elements.icon.addEventListener('change', () => { updateIconTrigger(); updateIconPreview(); });
-        elements.iconTrigger.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (elements.iconDropdown.style.display === 'block') {
-            hideIconDropdown();
-          } else {
-            showIconDropdown();
-          }
-        });
-        elements.label.addEventListener('input', handleLabelChange);
-        elements.id.addEventListener('input', handleIdInput);
-        elements.command.addEventListener('input', handleCommandInput);
-        elements.command.addEventListener('keydown', handleCommandKeydown);
-        elements.addVariable.addEventListener('click', () => {
-          addVariableRow();
-        });
-        document.addEventListener('click', (event) => {
-          if (!elements.dropdown.contains(event.target) && event.target !== elements.command) {
-            hideVariableDropdown();
-          }
-          if (!elements.iconDropdown.contains(event.target) && event.target !== elements.iconTrigger) {
-            hideIconDropdown();
-          }
-        });
-        vscode.postMessage({ type: 'ready' });
       });
 
-      window.addEventListener('message', handleMessage);
-    </script>
-  </body>
+      return {
+        id: elements.id.value.trim(),
+        label: elements.label.value.trim(),
+        description: elements.description.value.trim() || undefined,
+        icon: elements.icon.value || undefined,
+        command: elements.command.value,
+        terminal: {
+          type: elements.terminalType.value,
+          name: elements.terminalName.value.trim() || undefined,
+          cwd: elements.terminalCwd.value.trim() || undefined
+        },
+        variables: processedVariables
+      };
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      const command = collectCommand();
+      if (!command.id || !command.label || !command.command) {
+        vscode.postMessage({ type: 'error', message: 'Command requires id, label and command text.' });
+        return;
+      }
+      vscode.postMessage({ type: 'saveCommand', command, context: currentContext });
+    }
+
+    function handleCancel() {
+      vscode.postMessage({ type: 'cancel' });
+    }
+
+    function handleMessage(event) {
+      const message = event.data;
+      switch (message.type) {
+        case 'init':
+          availableVariables = message.variables || [];
+          populateForm(message.command, message.context);
+          break;
+        case 'variables':
+          availableVariables = message.variables || [];
+          renderDropdownItems();
+          updatePreview();
+          break;
+      }
+    }
+    function handleCommandInput(event) {
+      const textarea = elements.command;
+      const currentValue = textarea.value;
+      const currentPos = textarea.selectionStart;
+
+      // Check if a $ was just typed
+      if (event.inputType === 'insertText' && event.data === '$') {
+        lastTypedDollarIndex = currentPos - 1; // Position of the $ that was just typed
+        showVariableDropdown();
+      } else if (event.inputType === 'insertText' && event.data !== '$') {
+        // If other text was typed, hide dropdown
+        hideVariableDropdown();
+      } else if (elements.dropdown.style.display === 'block') {
+        // If dropdown is open and no $ was typed, hide it
+        hideVariableDropdown();
+      }
+
+      updatePreview();
+    }
+
+    function handleCommandKeydown(event) {
+      if (event.key === 'Escape' && elements.dropdown.style.display === 'block') {
+        hideVariableDropdown();
+        event.preventDefault();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateIconSelect();
+      elements.form.addEventListener('submit', handleSubmit);
+      elements.cancel.addEventListener('click', handleCancel);
+      elements.icon.addEventListener('change', () => { updateIconTrigger(); updateIconPreview(); });
+      elements.iconTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (elements.iconDropdown.style.display === 'block') {
+          hideIconDropdown();
+        } else {
+          showIconDropdown();
+        }
+      });
+      elements.label.addEventListener('input', handleLabelChange);
+      elements.id.addEventListener('input', handleIdInput);
+      elements.command.addEventListener('input', handleCommandInput);
+      elements.command.addEventListener('keydown', handleCommandKeydown);
+      elements.addVariable.addEventListener('click', () => {
+        addVariableRow();
+      });
+      document.addEventListener('click', (event) => {
+        if (!elements.dropdown.contains(event.target) && event.target !== elements.command) {
+          hideVariableDropdown();
+        }
+        if (!elements.iconDropdown.contains(event.target) && event.target !== elements.iconTrigger) {
+          hideIconDropdown();
+        }
+      });
+      vscode.postMessage({ type: 'ready' });
+    });
+
+    window.addEventListener('message', handleMessage);
+  </script>
+</body>
+
 </html>
