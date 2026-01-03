@@ -94,7 +94,7 @@ export class TerminalManager {
       { type: 'shell' },
       vscode.TaskScope.Workspace,
       config.name || 'Test Runner',
-      'Task and Documentation Hub',
+      'Commands Manager Next',
       shellExec,
       []
     );
@@ -146,7 +146,7 @@ export class TerminalManager {
       { type: 'shell' },
       vscode.TaskScope.Workspace,
       `${taskName} - ${Date.now()}`, // Unique name for each task
-      'Task and Documentation Hub',
+      'Commands Manager Next',
       shellExec,
       []
     );
@@ -179,7 +179,7 @@ export class TerminalManager {
     const activeTerminal = vscode.window.activeTerminal;
     if (!activeTerminal) {
       // Create a new terminal if none exists
-      const baseName = config.name || 'Task and Documentation Hub';
+      const baseName = config.name || 'Commands Manager Next';
       const terminalInstance = this.createManagedTerminal(baseName);
       this.terminals.set(baseName, terminalInstance);
       terminalInstance.show();
@@ -191,7 +191,7 @@ export class TerminalManager {
 
   private async executeInNewTerminal(command: string, config: TerminalConfig): Promise<void> {
     const { DebugLogger, DebugTag } = await import('../utils/DebugLogger');
-    const terminalName = config.name || 'Task and Documentation Hub';
+    const terminalName = config.name || 'Commands Manager Next';
 
     DebugLogger.log(DebugTag.TERMINAL, `Executing in new terminal`, {
       terminalName,

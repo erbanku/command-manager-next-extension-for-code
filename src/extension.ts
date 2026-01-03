@@ -129,11 +129,11 @@ export async function activate(context: vscode.ExtensionContext) {
                 // Silently fail - process is exiting
             }
         };
-        
+
         process.on('beforeExit', processExitHandler);
         process.on('SIGINT', processExitHandler);
         process.on('SIGTERM', processExitHandler);
-        
+
         context.subscriptions.push({
             dispose: () => {
                 if (typeof process !== 'undefined' && process.removeListener) {
@@ -148,7 +148,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Initialize time tracker status bar
     const timeTrackerStatusBar = new TimeTrackerStatusBar(context);
     context.subscriptions.push(timeTrackerStatusBar);
-    
+
     // Function to expand running timers
     const expandRunningTimers = async () => {
         if (!timeTrackerTreeView.visible) {
@@ -160,7 +160,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 return;
             }
             const runningTimers: Timer[] = [];
-            
+
             // Collect all running timers
             const findRunningTimers = (folders: any[]) => {
                 for (const folder of folders) {
@@ -176,13 +176,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             };
             findRunningTimers(config.folders || []);
-            
+
             // Expand each running timer
             for (const timer of runningTimers) {
                 try {
                     // Get root items
                     const rootItems = await timeTrackerProvider.getChildren(undefined);
-                    
+
                     // Search for the timer item recursively
                     const findTimerItem = async (items: TimeTrackerTreeItem[]): Promise<TimeTrackerTreeItem | null> => {
                         for (const item of items) {
@@ -200,7 +200,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         }
                         return null;
                     };
-                    
+
                     if (!timeTrackerTreeView.visible) {
                         return;
                     }
@@ -217,7 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // Ignore errors during expansion
         }
     };
-    
+
     // Update status bar when tree refreshes and expand running timers
     const originalRefresh = timeTrackerProvider.refresh.bind(timeTrackerProvider);
     timeTrackerProvider.refresh = () => {
@@ -230,7 +230,7 @@ export async function activate(context: vscode.ExtensionContext) {
             });
         }, 100);
     };
-    
+
     // Initially expand running timers after tree is ready
     setTimeout(() => {
         expandRunningTimers().catch(() => {
@@ -604,7 +604,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const quickRun = vscode.commands.registerCommand('commandManager.quickRun', async () => {
         const commands = await treeProvider.getAllCommands();
         if (commands.length === 0) {
-            vscode.window.showInformationMessage('No commands configured yet. Create one from the Task and Documentation Hub view.');
+            vscode.window.showInformationMessage('No commands configured yet. Create one from the Commands Manager Next view.');
             return;
         }
 
@@ -652,7 +652,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (confirm === 'Delete') {
             try {
                 const config = configManager.getConfig();
-                
+
                 if (item.isCommand()) {
                     const command = item.getCommand();
                     if (command) {
@@ -735,7 +735,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 folder.commands.splice(commandIndex, 1);
                 return;
             }
-            
+
             if (folder.subfolders) {
                 deleteCommandFromSubfolders(folder.subfolders, commandId);
             }
@@ -749,7 +749,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 subfolder.commands.splice(commandIndex, 1);
                 return;
             }
-            
+
             if (subfolder.subfolders) {
                 deleteCommandFromSubfolders(subfolder.subfolders, commandId);
             }
@@ -762,7 +762,7 @@ export async function activate(context: vscode.ExtensionContext) {
             config.folders.splice(folderIndex, 1);
             return;
         }
-        
+
         deleteFolderFromSubfolders(config.folders, folderName);
     }
 
@@ -774,7 +774,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     folder.subfolders.splice(subfolderIndex, 1);
                     return;
                 }
-                
+
                 deleteFolderFromSubfolders(folder.subfolders, folderName);
             }
         }
@@ -851,18 +851,18 @@ export async function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('No tests found in this folder.');
                 return;
             }
-            
+
             // Set all tests and parent to running
             testRunnerProvider.setTestsStatus(tests, 'running');
             testRunnerProvider.setParentStatus(item.config.id, 'folder', item.folderPath, 'running');
             // Refresh the config to ensure all children (folders, files, testcases, and tests) are recreated
             const configItem = new TestRunnerTreeItem('config', item.config);
             testRunnerProvider.refresh();
-            
+
             try {
                 // Use resolver to run all tests in folder with a single command
                 const passed = await testRunnerManager.runTestsInPathWithResult(item.config, tests, 'folder', item.folderPath);
-                
+
                 // Update all tests and parent to passed/failed
                 testRunnerProvider.setTestsStatus(tests, passed ? 'passed' : 'failed');
                 testRunnerProvider.setParentStatus(item.config.id, 'folder', item.folderPath, passed ? 'passed' : 'failed');
@@ -890,7 +890,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('No tests found in this file.');
                 return;
             }
-            
+
             // Set all tests and parent to running
             const fileKey = `${item.folderPath}/${item.fileName}`;
             testRunnerProvider.setTestsStatus(tests, 'running');
@@ -898,11 +898,11 @@ export async function activate(context: vscode.ExtensionContext) {
             // Refresh the parent folder to ensure all children (files, testcases, and tests) are recreated
             const parentFolderItem = new TestRunnerTreeItem('folder', item.config, undefined, undefined, item.folderPath);
             testRunnerProvider.refresh();
-            
+
             try {
                 // Use resolver to run all tests in file with a single command
                 const passed = await testRunnerManager.runTestsInPathWithResult(item.config, tests, 'file');
-                
+
                 // Update all tests and parent to passed/failed
                 testRunnerProvider.setTestsStatus(tests, passed ? 'passed' : 'failed');
                 testRunnerProvider.setParentStatus(item.config.id, 'file', fileKey, passed ? 'passed' : 'failed');
@@ -930,7 +930,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('No tests found in this test case.');
                 return;
             }
-            
+
             // Set all tests and parent to running
             const testCaseKey = `${item.folderPath}/${item.fileName}/${item.testCaseName}`;
             testRunnerProvider.setTestsStatus(tests, 'running');
@@ -938,11 +938,11 @@ export async function activate(context: vscode.ExtensionContext) {
             // Refresh both the testcase item and its parent file to ensure all children are recreated
             const parentFileItem = new TestRunnerTreeItem('file', item.config, undefined, undefined, item.folderPath, item.fileName);
             testRunnerProvider.refresh();
-            
+
             try {
                 // Use resolver to run all tests in test case with a single command
                 const passed = await testRunnerManager.runTestsInPathWithResult(item.config, tests, 'testcase', undefined, item.testCaseName);
-                
+
                 // Update all tests and parent to passed/failed
                 testRunnerProvider.setTestsStatus(tests, passed ? 'passed' : 'failed');
                 testRunnerProvider.setParentStatus(item.config.id, 'testcase', testCaseKey, passed ? 'passed' : 'failed');
@@ -1060,14 +1060,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 testStatusById.set(id, 'running');
                 const doc = await vscode.workspace.openTextDocument(test.file);
                 updateEditorDecorationsForDocument(doc);
-            } catch {}
+            } catch { }
 
             try {
                 const passed = await testRunnerManager.runTestWithResult(config, test.label, {
                     file: test.file.fsPath,
                     line: String(test.line + 1)
                 });
-                
+
                 // Update test status to actual result
                 if (treeItem) {
                     treeItem.setStatus(passed ? 'passed' : 'failed');
@@ -1080,12 +1080,12 @@ export async function activate(context: vscode.ExtensionContext) {
                     testStatusById.set(id, passed ? 'passed' : 'failed');
                     const doc = await vscode.workspace.openTextDocument(test.file);
                     updateEditorDecorationsForDocument(doc);
-                } catch {}
+                } catch { }
             } catch (error) {
                 // Show error message to user
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 vscode.window.showErrorMessage(`Test execution failed: ${errorMessage}`);
-                
+
                 // Update test status to failed
                 if (treeItem) {
                     treeItem.setStatus('failed');
@@ -1098,7 +1098,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     testStatusById.set(id, 'failed');
                     const doc = await vscode.workspace.openTextDocument(test.file);
                     updateEditorDecorationsForDocument(doc);
-                } catch {}
+                } catch { }
             }
         }
     );
@@ -1388,7 +1388,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // Show quick pick to select folder
             const configManager = ConfigManager.getInstance();
             const config = configManager.getTimeTrackerConfig();
-            
+
             const folderOptions: Array<{ label: string; path?: number[]; description?: string }> = [
                 { label: '$(folder-opened) Root Level', description: 'No category', path: undefined }
             ];
@@ -1620,7 +1620,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     // Show welcome message
-    vscode.window.showInformationMessage('Task and Documentation Hub extension activated! Use Ctrl+Shift+C for quick access.');
+    vscode.window.showInformationMessage('Commands Manager Next extension activated! Use Ctrl+Shift+C for quick access.');
 }
 
 export async function deactivate() {
@@ -1632,7 +1632,7 @@ export async function deactivate() {
         // Silently fail - extension is shutting down
         console.error('Error pausing timers on shutdown:', error);
     }
-    
+
     // Clean up resources
     try {
         const configManager = ConfigManager.getInstance();

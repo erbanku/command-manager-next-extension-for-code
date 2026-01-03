@@ -28,10 +28,10 @@ export function getDefaultConfig(): CommandConfig {
           {
             id: 'hello-world',
             label: 'Echo Hello',
-            command: 'echo "Hello from Task and Documentation Hub"',
+            command: 'echo "Hello from Commands Manager Next"',
             terminal: {
               type: 'vscode-new',
-              name: 'Task and Documentation Hub'
+              name: 'Commands Manager Next'
             },
             description: 'Sample command that echoes a welcome message'
           },

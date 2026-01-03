@@ -16,7 +16,7 @@ export class StatusBarManager implements vscode.Disposable {
   ) {
     this.mainItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     this.mainItem.text = '$(rocket) Tasks';
-    this.mainItem.tooltip = 'Task and Documentation Hub';
+    this.mainItem.tooltip = 'Commands Manager Next';
     this.mainItem.command = undefined;
     this.mainItem.show();
 
@@ -111,7 +111,7 @@ export class StatusBarManager implements vscode.Disposable {
 
       // Filter out invalid command IDs
       this.pinnedCommandIds = this.pinnedCommandIds.filter(id => commandsById.has(id));
-      
+
       // Save filtered list if it changed (but skip if we're being called from handleConfigChange)
       const config = this.configManager.getConfig();
       const configPinned = config.pinnedCommands || [];

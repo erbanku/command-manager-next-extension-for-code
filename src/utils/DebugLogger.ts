@@ -15,7 +15,7 @@ export class DebugLogger {
 
   public static initialize(): void {
     if (!this.outputChannel) {
-      this.outputChannel = vscode.window.createOutputChannel('Task and Documentation Hub Debug');
+      this.outputChannel = vscode.window.createOutputChannel('Commands Manager Next Debug');
     }
   }
 
@@ -33,10 +33,10 @@ export class DebugLogger {
     }
 
     this.initialize();
-    
+
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
     const logMessage = `${timestamp} ${tag} ${message}`;
-    
+
     if (this.outputChannel) {
       this.outputChannel.appendLine(logMessage);
       if (details !== undefined) {
@@ -67,4 +67,3 @@ export class DebugLogger {
     }
   }
 }
-
