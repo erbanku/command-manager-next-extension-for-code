@@ -2,7 +2,7 @@
   "name": "commands-manager-next",
   "displayName": "Commands Manager Next",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "publisher": "erbanku",
   "engines": {
     "vscode": "^1.85.0"
@@ -37,11 +37,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Leonardo8133/Leos-Shared-Commands"
+    "url": "https://github.com/erbanku/command-manager-next-extension-for-code"
   },
-  "homepage": "https://github.com/Leonardo8133/Leos-Shared-Commands#readme",
+  "homepage": "https://github.com/erbanku/command-manager-next-extension-for-code#readme",
   "bugs": {
-    "url": "https://github.com/Leonardo8133/Leos-Shared-Commands/issues"
+    "url": "https://github.com/erbanku/command-manager-next-extension-for-code/issues"
   },
   "activationEvents": [
     "onStartupFinished"
