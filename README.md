@@ -3,13 +3,12 @@
 > Manage tasks, run tests, browse docs, and track time in one VS Code sidebar.
 
 <p align="center">
-  <img src="resources/Tasks.gif" height="400" width="400"/>
-  <img src="resources/Tests.gif" height="400" width="400"/>
+  <img src="resources/Tasks.gif"/>
 </p>
 
 ## Features
 
-**📋 Tasks** - Create reusable commands with variables, organize in folders, pin to status bar
+**📋 Commands** - Create reusable commands with variables, organize in folders, pin to status bar
 
 **🧪 Test Runner** - Auto-discover tests, parallel execution (6 concurrent), pattern matching with preview
 
