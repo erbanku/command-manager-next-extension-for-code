@@ -2,7 +2,7 @@
   "name": "commands-manager-next",
   "displayName": "Commands Manager Next",
   "description": "Manage reusable commands, documentation, and automated test runners inside VS Code",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "publisher": "erbanku",
   "engines": {
     "vscode": "^1.85.0"
